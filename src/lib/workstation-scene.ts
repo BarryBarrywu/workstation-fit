@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { MetricKey, Posture, WorkstationResult } from './ergonomics';
 
 type SceneState = {
@@ -20,19 +22,13 @@ type MetricVisual = {
 
 const CM = 0.025;
 const graphite = 0x202522;
-const metalGreen = 0x66746b;
-const oxidized = 0xa8b0aa;
 const amber = 0xd5913d;
+const MODEL_HEIGHT = 1.754;
+const MODEL_HIP_HEIGHT = 0.974;
+const MODEL_SHIN_LENGTH = 0.415;
+const MODEL_ANKLE_TO_SOLE = 0.134;
 
 const lerp = (from: number, to: number, amount: number) => from + (to - from) * amount;
-
-function setSegment(mesh: THREE.Mesh, start: THREE.Vector3, end: THREE.Vector3, width: number) {
-  const midpoint = start.clone().add(end).multiplyScalar(0.5);
-  const direction = end.clone().sub(start);
-  mesh.position.copy(midpoint);
-  mesh.scale.set(width, direction.length(), width);
-  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
-}
 
 function makeLine(color = graphite) {
   const geometry = new THREE.BufferGeometry().setFromPoints([
@@ -58,7 +54,7 @@ function createMetricVisual(stage: HTMLElement, key: MetricKey): MetricVisual {
   return { line, capStart, capEnd, label, anchor: new THREE.Vector3() };
 }
 
-export function createWorkstationScene(stage: HTMLElement, canvas: HTMLCanvasElement) {
+export async function createWorkstationScene(stage: HTMLElement, canvas: HTMLCanvasElement) {
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog(0xeef2f0, 9, 15);
 
@@ -69,9 +65,17 @@ export function createWorkstationScene(stage: HTMLElement, canvas: HTMLCanvasEle
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.12;
+  renderer.toneMappingExposure = 0.92;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
+
+  const environment = new RoomEnvironment();
+  const environmentGenerator = new THREE.PMREMGenerator(renderer);
+  const environmentMap = environmentGenerator.fromScene(environment).texture;
+  scene.environment = environmentMap;
+  scene.environmentIntensity = 0.72;
+  environmentGenerator.dispose();
+  environment.dispose();
 
   const controls = new OrbitControls(camera, canvas);
   controls.enableDamping = true;
@@ -82,24 +86,16 @@ export function createWorkstationScene(stage: HTMLElement, canvas: HTMLCanvasEle
   controls.maxPolarAngle = 1.48;
   controls.target.set(0, 2.05, 0);
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x89948d, 2.3));
-  const keyLight = new THREE.DirectionalLight(0xfff4df, 3.5);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x89948d, 1.45));
+  const keyLight = new THREE.DirectionalLight(0xfff4df, 2.35);
   keyLight.position.set(-4, 8, 5);
   keyLight.castShadow = true;
   keyLight.shadow.mapSize.set(1024, 1024);
   scene.add(keyLight);
-  const rimLight = new THREE.DirectionalLight(0xbdd1c5, 1.4);
+  const rimLight = new THREE.DirectionalLight(0xbdd1c5, 0.85);
   rimLight.position.set(5, 5, -5);
   scene.add(rimLight);
 
-  const robotMaterial = new THREE.MeshStandardMaterial({ color: metalGreen, roughness: 0.72, metalness: 0.32 });
-  const robotDark = new THREE.MeshStandardMaterial({ color: graphite, roughness: 0.68, metalness: 0.42 });
-  const lampMaterial = new THREE.MeshStandardMaterial({
-    color: amber,
-    emissive: amber,
-    emissiveIntensity: 2.4,
-    roughness: 0.45,
-  });
   const furnitureMaterial = new THREE.MeshStandardMaterial({ color: 0xb9c0bb, roughness: 0.72, metalness: 0.12 });
   const furnitureDark = new THREE.MeshStandardMaterial({ color: 0x49514c, roughness: 0.6, metalness: 0.34 });
   const screenMaterial = new THREE.MeshStandardMaterial({ color: 0x26302c, roughness: 0.42, metalness: 0.2 });
@@ -175,33 +171,37 @@ export function createWorkstationScene(stage: HTMLElement, canvas: HTMLCanvasEle
   scene.add(chair);
 
   const robot = new THREE.Group();
+  robot.rotation.y = Math.PI / 2;
   scene.add(robot);
-  const torso = new THREE.Mesh(new RoundedBoxGeometry(0.44, 1, 0.68, 5, 0.14), robotMaterial);
-  torso.castShadow = true;
-  robot.add(torso);
-  const chestLight = new THREE.Mesh(new THREE.SphereGeometry(0.065, 20, 12), lampMaterial);
-  robot.add(chestLight);
-  const head = new THREE.Mesh(new RoundedBoxGeometry(0.56, 0.48, 0.64, 6, 0.2), robotMaterial);
-  head.castShadow = true;
-  robot.add(head);
-  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.12, 1, 12), robotDark);
-  robot.add(neck);
-  const eye = new THREE.Mesh(new THREE.SphereGeometry(0.055, 20, 12), lampMaterial);
-  robot.add(eye);
 
-  const segmentGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 12);
-  const jointGeometry = new THREE.SphereGeometry(0.12, 16, 12);
-  const limbSegments = Array.from({ length: 8 }, () => {
-    const mesh = new THREE.Mesh(segmentGeometry, robotMaterial);
-    mesh.castShadow = true;
-    robot.add(mesh);
-    return mesh;
+  const gltf = await new GLTFLoader().loadAsync('/models/workstation-guide.glb');
+  const robotModel = gltf.scene;
+  robotModel.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) return;
+    object.castShadow = true;
+    object.receiveShadow = true;
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    materials.forEach((material) => {
+      if (!(material instanceof THREE.MeshStandardMaterial) || material.name !== 'Shell_Accent') return;
+      material.color.setHex(0x657169);
+      material.roughness = 0.58;
+      material.metalness = 0.24;
+    });
   });
-  const joints = Array.from({ length: 8 }, () => {
-    const mesh = new THREE.Mesh(jointGeometry, robotDark);
-    robot.add(mesh);
-    return mesh;
-  });
+  robot.add(robotModel);
+
+  const requiredNode = (name: string) => {
+    const node = robotModel.getObjectByName(name);
+    if (!node) throw new Error(`Missing robot node: ${name}`);
+    return node;
+  };
+  const poseNodes = {
+    hips: [requiredNode('Hip_L'), requiredNode('Hip_R')],
+    knees: [requiredNode('Knee_L'), requiredNode('Knee_R')],
+    ankles: [requiredNode('Ankle_L'), requiredNode('Ankle_R')],
+    shoulders: [requiredNode('Shoulder_L'), requiredNode('Shoulder_R')],
+    elbows: [requiredNode('Elbow_L'), requiredNode('Elbow_R')],
+  };
 
   const metricVisuals = {
     seat: createMetricVisual(stage, 'seat'),
@@ -243,54 +243,59 @@ export function createWorkstationScene(stage: HTMLElement, canvas: HTMLCanvasEle
   }
 
   function updateRobot(humanHeight: number) {
-    const h = humanHeight * CM;
-    const standing = postureMix;
-    const sitHip = new THREE.Vector3(-0.8, seatHeight + 0.18, 0);
-    const standHip = new THREE.Vector3(-0.72, h * 0.52, 0);
-    const hip = sitHip.lerp(standHip, standing);
-    const sitShoulder = new THREE.Vector3(-0.72, seatHeight + h * 0.34, 0);
-    const standShoulder = new THREE.Vector3(-0.68, h * 0.81, 0);
-    const shoulder = sitShoulder.lerp(standShoulder, standing);
-    const headCenter = shoulder.clone().add(new THREE.Vector3(0.035, h * 0.115, 0));
+    const scale = (humanHeight * CM) / MODEL_HEIGHT;
+    const seatedAmount = 1 - postureMix;
+    const hipTargetHeight = seatHeight + 0.13;
+    const seatedRootY = hipTargetHeight - MODEL_HIP_HEIGHT * scale;
+    robot.scale.setScalar(scale);
+    robot.position.set(
+      lerp(-0.78, -0.68, postureMix),
+      lerp(seatedRootY, 0, postureMix),
+      0,
+    );
 
-    torso.position.copy(hip.clone().lerp(shoulder, 0.5));
-    torso.scale.set(1, shoulder.distanceTo(hip), 1);
-    torso.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), shoulder.clone().sub(hip).normalize());
-    chestLight.position.copy(torso.position).add(new THREE.Vector3(0.225, 0.08, 0));
-    head.position.copy(headCenter);
-    const neckStart = shoulder.clone().add(new THREE.Vector3(0.02, 0.07, 0));
-    const neckEnd = headCenter.clone().add(new THREE.Vector3(0, -0.26, 0));
-    setSegment(neck, neckStart, neckEnd, 0.11);
-    eye.position.copy(headCenter).add(new THREE.Vector3(0.285, 0.035, 0));
+    const seatedHipAngle = -Math.PI / 2;
+    const calfCosine = THREE.MathUtils.clamp(
+      (hipTargetHeight / scale - MODEL_ANKLE_TO_SOLE) / MODEL_SHIN_LENGTH,
+      0.15,
+      0.98,
+    );
+    const seatedCalfAngle = Math.acos(calfCosine);
+    const hipAngle = seatedHipAngle * seatedAmount;
+    const calfAngle = seatedCalfAngle * seatedAmount;
+    const kneeAngle = calfAngle - hipAngle;
+    const ankleAngle = -calfAngle;
+    poseNodes.hips.forEach((node) => { node.rotation.x = hipAngle; });
+    poseNodes.knees.forEach((node) => { node.rotation.x = kneeAngle; });
+    poseNodes.ankles.forEach((node) => { node.rotation.x = ankleAngle; });
 
-    const sitKnee = new THREE.Vector3(-0.08, seatHeight - 0.05, 0);
-    const standKnee = new THREE.Vector3(-0.6, h * 0.27, 0);
-    const knee = sitKnee.lerp(standKnee, standing);
-    const sitAnkle = new THREE.Vector3(0.12, 0.2, 0);
-    const standAnkle = new THREE.Vector3(-0.55, 0.18, 0);
-    const ankle = sitAnkle.lerp(standAnkle, standing);
-
-    const sitElbow = new THREE.Vector3(-0.58, deskHeight + 0.12, 0);
-    const standElbow = new THREE.Vector3(-0.52, deskHeight + 0.13, 0);
-    const elbow = sitElbow.lerp(standElbow, standing);
-    const hand = new THREE.Vector3(0.18, deskHeight + 0.07, 0);
-
-    const limbWidth = Math.max(0.105, h * 0.027);
-    const pairs = [
-      [hip, knee, -0.2], [knee, ankle, -0.2],
-      [hip, knee, 0.2], [knee, ankle, 0.2],
-      [shoulder, elbow, -0.22], [elbow, hand, -0.22],
-      [shoulder, elbow, 0.22], [elbow, hand, 0.22],
-    ] as const;
-    pairs.forEach(([startBase, endBase, z], index) => {
-      const start = startBase.clone();
-      const end = endBase.clone();
-      start.z = z;
-      end.z = z;
-      setSegment(limbSegments[index], start, end, limbWidth);
-      joints[index].position.copy(end);
-      joints[index].scale.setScalar(limbWidth / 0.12);
-    });
+    const shoulderWorldY = robot.position.y + 1.439 * scale;
+    const shoulderWorldX = robot.position.x;
+    const targetX = 0.05;
+    const targetY = deskHeight + 0.07;
+    const forward = Math.max(0.12, targetX - shoulderWorldX);
+    const downward = Math.max(0.08, shoulderWorldY - targetY);
+    const upperArm = 0.305 * scale;
+    const forearm = 0.305 * scale;
+    const reach = THREE.MathUtils.clamp(
+      Math.hypot(forward, downward),
+      Math.abs(upperArm - forearm) + 0.001,
+      (upperArm + forearm) * 0.96,
+    );
+    const direction = Math.atan2(forward, downward);
+    const shoulderOffset = Math.acos(THREE.MathUtils.clamp(
+      (upperArm * upperArm + reach * reach - forearm * forearm) / (2 * upperArm * reach),
+      -1,
+      1,
+    ));
+    const shoulderAngle = -(direction - shoulderOffset);
+    const elbowAngle = -Math.acos(THREE.MathUtils.clamp(
+      (reach * reach - upperArm * upperArm - forearm * forearm) / (2 * upperArm * forearm),
+      -1,
+      1,
+    ));
+    poseNodes.shoulders.forEach((node) => { node.rotation.x = shoulderAngle; });
+    poseNodes.elbows.forEach((node) => { node.rotation.x = elbowAngle; });
   }
 
   function updateFurniture() {
@@ -367,7 +372,7 @@ export function createWorkstationScene(stage: HTMLElement, canvas: HTMLCanvasEle
     const { width, height } = stage.getBoundingClientRect();
     renderer.setSize(width, height, false);
     camera.aspect = width / Math.max(height, 1);
-    camera.fov = width < 600 ? 48 : 34;
+    camera.fov = width < 600 ? 38 : 34;
     camera.updateProjectionMatrix();
   };
   const resizeObserver = new ResizeObserver(resize);

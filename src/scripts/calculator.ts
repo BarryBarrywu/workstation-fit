@@ -54,7 +54,7 @@ let sceneController: { update: (state: { height: number; posture: Posture; activ
 const loadScene = async () => {
   try {
     const { createWorkstationScene } = await import('../lib/workstation-scene');
-    sceneController = createWorkstationScene(stage, canvas);
+    sceneController = await createWorkstationScene(stage, canvas);
     render();
   } catch {
     canvas.hidden = true;
