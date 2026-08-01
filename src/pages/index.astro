@@ -1,0 +1,89 @@
+---
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta
+      name="description"
+      content="输入身高，获得椅子、坐站桌和显示器的工位设置起始范围。所有计算都在浏览器本地完成。"
+    />
+    <title>合身工位｜找到更适合你的桌椅高度</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="合身工位首页">
+        <span class="wordmark-mark" aria-hidden="true"></span>
+        <span>合身工位</span>
+      </a>
+      <span class="header-note">开源 · 数据留在本机</span>
+    </header>
+
+    <main class="calculator-shell">
+      <section class="control-panel" aria-labelledby="page-title">
+        <div class="intro">
+          <p class="eyebrow">WORKSTATION FIT</p>
+          <h1 id="page-title">让工位，<br />先合身。</h1>
+          <p class="lede">从身高得到一个可信的起点，再用身体感受完成最后几厘米。</p>
+        </div>
+
+        <div class="height-control">
+          <div class="control-heading">
+            <label for="height-number">你的身高</label>
+            <div class="number-field">
+              <input id="height-number" type="number" min="145" max="205" value="173" inputmode="numeric" />
+              <span>cm</span>
+            </div>
+          </div>
+          <input id="height-range" class="height-range" type="range" min="145" max="205" value="173" aria-label="身高，厘米" />
+          <div class="range-ends" aria-hidden="true"><span>145</span><span>205</span></div>
+        </div>
+
+        <fieldset class="posture-switch">
+          <legend class="sr-only">选择工作姿态</legend>
+          <button class="posture-button is-active" type="button" data-posture="sitting" aria-pressed="true">坐着</button>
+          <button class="posture-button" type="button" data-posture="standing" aria-pressed="false">站着</button>
+          <span class="posture-indicator" aria-hidden="true"></span>
+        </fieldset>
+
+        <div class="result-heading">
+          <div>
+            <p class="section-label">起始范围</p>
+            <p id="confidence-note">适用于来源数据覆盖的身高范围</p>
+          </div>
+          <span id="posture-caption">坐姿</span>
+        </div>
+
+        <div id="results" class="results" aria-live="polite"></div>
+
+        <details class="calibration-note">
+          <summary>30 秒身体校准</summary>
+          <ol>
+            <li>脚掌完全着地，椅面略低于膝盖。</li>
+            <li>肩膀放松，键盘接近自然垂下的手肘。</li>
+            <li>屏幕顶部不高于眼睛，距离大约一臂。</li>
+          </ol>
+        </details>
+      </section>
+
+      <section id="stage" class="stage" aria-label="可旋转的工位设置三维示意图">
+        <canvas id="workstation-canvas"></canvas>
+        <div class="stage-topline">
+          <span class="live-dot"><i></i> 实时联动</span>
+          <span class="drag-hint">拖动旋转 · 滚轮缩放</span>
+        </div>
+        <p class="stage-fallback" hidden>当前设备无法显示 3D 场景，计算结果仍可正常使用。</p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>合身工位由 Barry 独立设计并开源，感谢西昊 Sihoo 对本期内容的支持。</p>
+      <p>结果仅作为设置起点，不替代专业的人体工学评估。</p>
+    </footer>
+
+    <script src="../scripts/calculator.ts"></script>
+  </body>
+</html>
