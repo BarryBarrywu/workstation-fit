@@ -105,6 +105,7 @@ test('onboarding is skippable, replayable, and leaves fit values unchanged', asy
   await expect(dialog).toBeVisible();
   await page.getByRole('button', { name: '下一步' }).click();
   await expect(page.getByRole('dialog', { name: '坐姿与站姿分开' })).toBeVisible();
+  await expect(page.getByText('坐姿与站姿的检查进度独立保存，切换时不会互相覆盖。')).toBeVisible();
   await page.getByRole('button', { name: '下一步' }).click();
   await expect(page.getByRole('dialog', { name: '直接拖动机器人' })).toBeVisible();
   await page.getByRole('button', { name: '开始使用' }).click();

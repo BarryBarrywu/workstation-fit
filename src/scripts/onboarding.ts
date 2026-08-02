@@ -1,6 +1,6 @@
 const steps = [
   { target: 'height', placement: 'right', title: '先输入身高', copy: '身高决定可追溯的建议起点。腿、躯干和手臂比例的差异，需要再按真实身体检查实际摆位。' },
-  { target: 'posture', placement: 'right', title: '坐姿与站姿分开', copy: '两种姿态的桌面与屏幕位置独立保存，切换时不会互相覆盖。' },
+  { target: 'posture', placement: 'right', title: '坐姿与站姿分开', copy: '坐姿与站姿的检查进度独立保存，切换时不会互相覆盖。' },
   { target: 'scene', placement: 'inside', title: '直接拖动机器人', copy: '拖动可旋转，滚轮或双指可缩放。选中一个数值时，对应部位和尺寸线会高亮。' },
 ];
 

@@ -4,6 +4,7 @@ import {
   type EvidenceKey,
   type MetricKey,
   type Posture,
+  type Range,
   type ResultKey,
   type WorkstationResult,
 } from '../lib/ergonomics';
@@ -96,7 +97,7 @@ if ('requestIdleCallback' in window) {
   setTimeout(() => void loadScene(), 0);
 }
 
-function formatRange(range: { min: number; max: number; reference: number }) {
+function formatRange(range: Range) {
   const rounded = roundRange(range);
   return `${rounded.min}–${rounded.max}`;
 }

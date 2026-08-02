@@ -9,7 +9,7 @@
 ## Product rules
 
 - Chinese is the default language at `/`; English lives at `/en/` when implemented.
-- Present height-only results as starting ranges, never medical advice or a single ideal value.
+- Present height-only results as a suggested starting point paired with a reference range, never medical advice or a single ideal value.
 - Keep calculation data and interpolation independent from DOM and Three.js code.
 - The 3D robot and furniture must remain original and must not reproduce protected character designs.
 

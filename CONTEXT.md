@@ -13,8 +13,8 @@ The V1 body input model uses height alone to create broad fit estimates, then re
 _Avoid_: Claiming personal precision from height, mandatory body survey
 
 **Fit estimate**:
-A height-derived starting range for a workstation measurement that must be confirmed against the person's body.
-_Avoid_: Ideal height, perfect height, medical recommendation
+A height-derived suggested starting point paired with a reference range that must be confirmed against the person's body.
+_Avoid_: Ideal height, perfect height, optimal value, medical recommendation
 
 **Monitor-top height**:
 The floor-to-screen-top fit estimate used to compare the display with the user's natural eye line. Screen-bottom height is not a product metric because it depends on the physical display size.
