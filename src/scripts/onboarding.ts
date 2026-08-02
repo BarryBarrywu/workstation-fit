@@ -1,0 +1,59 @@
+const steps = [
+  { target: 'height', title: '先输入身高', copy: '身高只决定可追溯的起始范围。腿、躯干和手臂比例的差异，会在身体校准里处理。' },
+  { target: 'posture', title: '坐姿与站姿分开', copy: '两种姿态的桌面与屏幕位置独立保存，切换时不会互相覆盖。' },
+  { target: 'scene', title: '直接拖动机器人', copy: '拖动可旋转，滚轮或双指可缩放。选中一个数值时，对应部位和尺寸线会高亮。' },
+];
+
+const required = <T extends Element>(selector: string): T => {
+  const element = document.querySelector<T>(selector);
+  if (!element) throw new Error(`Missing onboarding element: ${selector}`);
+  return element;
+};
+
+export function createOnboarding(onComplete: () => void) {
+  const dialog = required<HTMLDialogElement>('#onboarding-dialog');
+  const title = required<HTMLElement>('#onboarding-title');
+  const copy = required<HTMLElement>('#onboarding-copy');
+  const progress = required<HTMLElement>('#onboarding-progress');
+  const nextButton = required<HTMLButtonElement>('#next-onboarding');
+  let currentStep = 0;
+
+  const clearTarget = () => document.querySelector('.onboarding-target')?.classList.remove('onboarding-target');
+
+  const render = () => {
+    clearTarget();
+    const step = steps[currentStep];
+    title.textContent = step.title;
+    copy.textContent = step.copy;
+    progress.textContent = `${currentStep + 1} / ${steps.length}`;
+    nextButton.textContent = currentStep === steps.length - 1 ? '开始使用' : '下一步';
+    document.querySelector(`[data-onboarding-target="${step.target}"]`)?.classList.add('onboarding-target');
+  };
+
+  const finish = () => {
+    clearTarget();
+    onComplete();
+    dialog.close();
+  };
+
+  const show = () => {
+    currentStep = 0;
+    render();
+    if (!dialog.open) dialog.show();
+  };
+
+  required<HTMLButtonElement>('#skip-onboarding').addEventListener('click', finish);
+  nextButton.addEventListener('click', () => {
+    if (currentStep === steps.length - 1) finish();
+    else {
+      currentStep += 1;
+      render();
+    }
+  });
+  dialog.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    finish();
+  });
+
+  return { show };
+}

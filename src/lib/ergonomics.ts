@@ -17,6 +17,8 @@ export type EvidenceSource = {
   url: string;
   evidenceClass: EvidenceClass;
   role: string;
+  versionOrPublished: string;
+  verifiedAt: string;
 };
 
 export type EvidenceChain = {
@@ -27,6 +29,7 @@ export type EvidenceChain = {
   sourceCoverage: { minHeight: number; maxHeight: number } | null;
   adoptedData: string;
   transformation: string;
+  extrapolation: string;
   limitations: string;
   sources: EvidenceSource[];
 };
@@ -52,6 +55,8 @@ const gbStandard: EvidenceSource = {
   url: 'https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=B19DCCA575D9406856ABF87A511EE11F',
   evidenceClass: 'national-standard',
   role: '提供中国 18–70 岁成人身高、坐姿腘高、坐姿眼高与肘高等统计值。',
+  versionOrPublished: 'GB/T 10000—2023；2023-08-06 发布',
+  verifiedAt: '2026-08-02',
 };
 
 const cnisSurvey: EvidenceSource = {
@@ -60,6 +65,8 @@ const cnisSurvey: EvidenceSource = {
   url: 'https://www.cnis.ac.cn/ynbm/jcbzhyjs/kydt/202212/t20221222_54389.html',
   evidenceClass: 'research',
   role: '说明新版中国成人尺寸调查与工作空间回归模型的来源背景。',
+  versionOrPublished: '2022-12-22 发布',
+  verifiedAt: '2026-08-02',
 };
 
 const cornellChair: EvidenceSource = {
@@ -68,6 +75,8 @@ const cornellChair: EvidenceSource = {
   url: 'https://ergo.human.cornell.edu/AHTutorials/chairch.html',
   evidenceClass: 'professional-guidance',
   role: '用于身体校准：双脚稳定着地，膝前缘与椅面接近或略高。',
+  versionOrPublished: '网页未标注版本或发布日期',
+  verifiedAt: '2026-08-02',
 };
 
 const mayoOffice: EvidenceSource = {
@@ -76,6 +85,8 @@ const mayoOffice: EvidenceSource = {
   url: 'https://www.mayoclinic.org/healthy-lifestyle/adult-health/in-depth/office-ergonomics/art-20046169',
   evidenceClass: 'professional-guidance',
   role: '用于桌面、屏幕高度和观看距离的姿势校准规则。',
+  versionOrPublished: '2023-05-25 发布',
+  verifiedAt: '2026-08-02',
 };
 
 const oshaMonitor: EvidenceSource = {
@@ -84,6 +95,8 @@ const oshaMonitor: EvidenceSource = {
   url: 'https://www.osha.gov/etools/computer-workstations/components/monitors',
   evidenceClass: 'occupational-health',
   role: '支持屏幕顶部不高于眼睛及 50–100 cm 的一般观看距离。',
+  versionOrPublished: '网页未标注版本或发布日期',
+  verifiedAt: '2026-08-02',
 };
 
 const ccohsMonitor: EvidenceSource = {
@@ -92,6 +105,8 @@ const ccohsMonitor: EvidenceSource = {
   url: 'https://www.ccohs.ca/oshanswers/ergonomics/office/monitor_positioning.html',
   evidenceClass: 'occupational-health',
   role: '提供 40–74 cm 与自然下视角的另一组专业指南，并强调按个人情况调整。',
+  versionOrPublished: '2022-11-29 修订；2025-07-21 确认为当前版本',
+  verifiedAt: '2026-08-02',
 };
 
 export const evidenceChains: Record<EvidenceKey, EvidenceChain> = {
@@ -102,7 +117,8 @@ export const evidenceChains: Record<EvidenceKey, EvidenceChain> = {
     population: '中国 18–70 岁成年男性与女性；静态人体测量。',
     sourceCoverage: { minHeight: 143, maxHeight: 186 },
     adoptedData: '身高/坐姿腘高节点（cm）：143/34.1、158/38.0、168.7/41.3、186/46.9；由女性与男性百分位节点组成。',
-    transformation: '按身高在线性插值；在来源上界外沿最后趋势继续估算；中心值上下各保留 2 cm 校准窗口。',
+    transformation: '在来源节点之间按身高线性插值；中心值上下各保留 2 cm 校准窗口。',
+    extrapolation: '身高高于 186 cm 时，项目按每增加 1 cm 身高、中心值增加 0.216 cm 外推；这是项目估算，不是国家标准给出的个人回归公式。',
     limitations: '身高不能准确预测个人腿长；百分位配对也不是个人回归。鞋底、坐垫压缩、腿部比例与脚踏都会改变实际椅面高度。',
     sources: [gbStandard, cnisSurvey, cornellChair],
   },
@@ -114,6 +130,7 @@ export const evidenceChains: Record<EvidenceKey, EvidenceChain> = {
     sourceCoverage: { minHeight: 143, maxHeight: 186 },
     adoptedData: '由坐姿腘高与坐姿肘高合成的身高/桌面中心节点（cm）：143/55、158/63、168.7/68、186/76。',
     transformation: '将椅面中心值与坐姿肘高合成并线性插值，给中心值上下各 2 cm 起始窗口。',
+    extrapolation: '身高高于 186 cm 时，项目按每增加 1 cm 身高、中心值增加 0.46 cm 外推；这是项目估算。',
     limitations: '百分位配对不是个人回归；键盘厚度、扶手、前臂长度、座垫压缩和任务类型会改变合适桌高。',
     sources: [gbStandard, cnisSurvey, mayoOffice],
   },
@@ -125,6 +142,7 @@ export const evidenceChains: Record<EvidenceKey, EvidenceChain> = {
     sourceCoverage: { minHeight: 143, maxHeight: 186 },
     adoptedData: '身高/立姿肘高节点（cm）：143/86、158/96、168.7/103.7、186/116.1。',
     transformation: '按身高线性插值立姿肘高，给中心值上下各 2 cm 起始窗口。',
+    extrapolation: '身高高于 186 cm 时，项目按每增加 1 cm 身高、中心值增加 0.62 cm 外推；这是项目估算。',
     limitations: '百分位配对不是个人回归；鞋底、键盘厚度、前臂比例和具体任务会造成个体差异。',
     sources: [gbStandard, cnisSurvey, mayoOffice],
   },
@@ -136,6 +154,7 @@ export const evidenceChains: Record<EvidenceKey, EvidenceChain> = {
     sourceCoverage: { minHeight: 143, maxHeight: 186 },
     adoptedData: '由椅面与坐姿眼高合成的身高/落地眼高节点（cm）：143/99、158/112、168.7/121、186/136；屏幕规则来自 OSHA 与 Mayo。',
     transformation: '椅面中心值加坐姿眼高，再将屏幕顶部放在眼高以下 0–3 cm。',
+    extrapolation: '身高高于 186 cm 时，项目按每增加 1 cm 身高、落地眼高增加 0.78 cm 外推；这是项目估算。',
     limitations: '百分位配对不是个人回归；屏幕尺寸、后仰角度、坐垫压缩以及渐进多焦点眼镜会要求更低的位置。',
     sources: [gbStandard, oshaMonitor, mayoOffice],
   },
@@ -147,6 +166,7 @@ export const evidenceChains: Record<EvidenceKey, EvidenceChain> = {
     sourceCoverage: { minHeight: 143, maxHeight: 186 },
     adoptedData: '身高/立姿眼高节点（cm）：143/132、158/146、168.7/156.6、186/173；屏幕规则来自 OSHA 与 Mayo。',
     transformation: '按身高线性插值站姿眼高，再将屏幕顶部放在眼高以下 0–3 cm。',
+    extrapolation: '身高高于 186 cm 时，项目按每增加 1 cm 身高、眼高增加 0.93 cm 外推；这是项目估算。',
     limitations: '百分位配对不是个人回归；鞋底、屏幕尺寸、站姿习惯以及渐进多焦点眼镜会改变最后位置。',
     sources: [gbStandard, oshaMonitor, mayoOffice],
   },
@@ -158,6 +178,7 @@ export const evidenceChains: Record<EvidenceKey, EvidenceChain> = {
     sourceCoverage: null,
     adoptedData: 'OSHA 建议通常为 50–100 cm；CCOHS 图示为 40–74 cm；Mayo 建议约一臂并给出 50–100 cm。',
     transformation: '取多份指南重叠且易操作的 50–75 cm 作为起始观察范围。',
+    extrapolation: '不按身高插值或外推。',
     limitations: '文字大小、视力、屏幕尺寸和任务会显著影响距离；看不清时应先调整字号，避免身体前探。',
     sources: [oshaMonitor, ccohsMonitor, mayoOffice],
   },
@@ -230,11 +251,13 @@ const monitorTopRange = (eyeHeight: number): Range => ({
   reference: eyeHeight - 1.5,
 });
 
-const statusForHeight = (height: number): EvidenceStatus => height >= 143 && height <= 186 ? 'reference' : 'trend';
+export function evidenceStatusFor(key: EvidenceKey, height: number): EvidenceStatus {
+  const coverage = evidenceChains[key].sourceCoverage;
+  if (!coverage) return 'guidance';
+  return height >= coverage.minHeight && height <= coverage.maxHeight ? 'reference' : 'trend';
+}
 
 export function calculateWorkstation(height: number): WorkstationResult {
-  const anthropometricStatus = statusForHeight(height);
-
   return {
     seat: centeredRange(interpolate(height, seatNodes, 4.1 / 19), 2),
     sittingDesk: centeredRange(interpolate(height, sittingDeskNodes, 0.46), 2),
@@ -243,12 +266,12 @@ export function calculateWorkstation(height: number): WorkstationResult {
     standingMonitorTop: monitorTopRange(interpolate(height, standingEyeNodes, 0.93)),
     monitorDistance: { min: 50, max: 75, reference: 62.5 },
     evidenceStatus: {
-      seat: anthropometricStatus,
-      sittingDesk: anthropometricStatus,
-      standingDesk: anthropometricStatus,
-      sittingMonitorTop: anthropometricStatus,
-      standingMonitorTop: anthropometricStatus,
-      distance: 'guidance',
+      seat: evidenceStatusFor('seat', height),
+      sittingDesk: evidenceStatusFor('sittingDesk', height),
+      standingDesk: evidenceStatusFor('standingDesk', height),
+      sittingMonitorTop: evidenceStatusFor('sittingMonitorTop', height),
+      standingMonitorTop: evidenceStatusFor('standingMonitorTop', height),
+      distance: evidenceStatusFor('distance', height),
     },
   };
 }

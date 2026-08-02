@@ -3,8 +3,10 @@ import {
   advanceCalibration,
   createFitProfile,
   parseFitProfile,
+  restartCalibration,
   setHeight,
   setOffset,
+  skipCalibration,
   type AdjustableResultKey,
 } from '../src/lib/fit-profile';
 
@@ -62,5 +64,14 @@ describe('local fit profile', () => {
 
   it('never stores a viewing-distance offset', () => {
     expect(createFitProfile().offsets).not.toHaveProperty('monitorDistance');
+  });
+
+  it('lets a user skip the active posture calibration without affecting the other posture', () => {
+    let profile = restartCalibration(createFitProfile(), 'sitting');
+    profile = advanceCalibration(profile, 'sitting');
+    profile = skipCalibration(profile, 'sitting');
+
+    expect(profile.calibration.sitting).toEqual({ step: 0, status: 'not-started' });
+    expect(profile.calibration.standing).toEqual({ step: 0, status: 'not-started' });
   });
 });

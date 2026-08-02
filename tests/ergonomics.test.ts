@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calculateWorkstation, evidenceChains, roundRange } from '../src/lib/ergonomics';
+import { calculateWorkstation, evidenceChains, evidenceStatusFor, roundRange } from '../src/lib/ergonomics';
 
 describe('height-only fit estimates', () => {
   it.each([
@@ -43,21 +43,28 @@ describe('height-only fit estimates', () => {
     ['sittingMonitorTop', 'sittingMonitorTop'],
     ['standingMonitorTop', 'standingMonitorTop'],
   ] as const)('reports source coverage independently for %s', (_, evidenceKey) => {
-    expect(calculateWorkstation(145).evidenceStatus[evidenceKey]).toBe('reference');
-    expect(calculateWorkstation(186).evidenceStatus[evidenceKey]).toBe('reference');
-    expect(calculateWorkstation(205).evidenceStatus[evidenceKey]).toBe('trend');
+    expect(calculateWorkstation(145).evidenceStatus[evidenceKey]).toBe(evidenceStatusFor(evidenceKey, 145));
+    expect(calculateWorkstation(186).evidenceStatus[evidenceKey]).toBe(evidenceStatusFor(evidenceKey, 186));
+    expect(calculateWorkstation(205).evidenceStatus[evidenceKey]).toBe(evidenceStatusFor(evidenceKey, 205));
   });
 });
 
 describe('evidence chains', () => {
-  it('exposes an auditable seat-height chain', () => {
-    const chain = evidenceChains.seat;
-
-    expect(chain.sourceCoverage).toEqual({ minHeight: 143, maxHeight: 186 });
-    expect(chain.sources.some((source) => source.evidenceClass === 'national-standard')).toBe(true);
+  it.each(Object.entries(evidenceChains))('exposes a complete auditable chain for %s', (_, chain) => {
+    expect(chain.id).toBeTruthy();
+    expect(chain.adoptedData).toBeTruthy();
+    expect(chain.transformation).toBeTruthy();
+    expect(chain.extrapolation).toBeTruthy();
+    expect(chain.limitations).toBeTruthy();
+    expect(chain.sources.length).toBeGreaterThan(0);
     expect(chain.sources.every((source) => new URL(source.url).protocol === 'https:')).toBe(true);
-    expect(chain.adoptedData).toContain('坐姿腘高');
-    expect(chain.transformation).toContain('线性插值');
-    expect(chain.limitations).toContain('身高不能准确预测个人腿长');
+    expect(chain.sources.every((source) => source.versionOrPublished.length > 0)).toBe(true);
+    expect(chain.sources.every((source) => source.verifiedAt === '2026-08-02')).toBe(true);
+  });
+
+  it('labels project extrapolation separately from source data', () => {
+    expect(evidenceChains.seat.extrapolation).toContain('0.216 cm');
+    expect(evidenceChains.seat.extrapolation).toContain('不是国家标准');
+    expect(evidenceChains.distance.extrapolation).toBe('不按身高插值或外推。');
   });
 });

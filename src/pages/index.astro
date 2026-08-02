@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { evidenceChains } from '../lib/ergonomics';
+import { relatedEpisode } from '../lib/content';
 
 const chains = Object.values(evidenceChains);
 const classLabels = {
@@ -77,6 +78,7 @@ const classLabels = {
             </div>
             <div class="calibration-actions">
               <button id="exit-calibration" type="button">稍后继续</button>
+              <button id="skip-calibration" type="button">跳过校准</button>
               <button id="next-calibration" class="primary-button" type="button">这一步好了</button>
             </div>
           </div>
@@ -132,6 +134,7 @@ const classLabels = {
                 <div><dt>来源覆盖</dt><dd>{chain.sourceCoverage ? `${chain.sourceCoverage.minHeight}–${chain.sourceCoverage.maxHeight} cm` : '与身高无关的通用指南'}</dd></div>
                 <div><dt>采用数据</dt><dd>{chain.adoptedData}</dd></div>
                 <div><dt>项目换算</dt><dd>{chain.transformation}</dd></div>
+                <div><dt>覆盖外估算</dt><dd>{chain.extrapolation}</dd></div>
                 <div><dt>局限</dt><dd>{chain.limitations}</dd></div>
               </dl>
               <div class="source-links" aria-label={`${chain.label}原始资料`}>
@@ -140,6 +143,7 @@ const classLabels = {
                     <span>{classLabels[source.evidenceClass]}</span>
                     <strong>{source.organization}</strong>
                     <small>{source.title}</small>
+                    <small>{source.versionOrPublished} · 核查于 {source.verifiedAt}</small>
                   </a>
                 ))}
               </div>
@@ -151,17 +155,22 @@ const classLabels = {
       <section id="episode" class="content-section episode-section" aria-labelledby="episode-title">
         <div class="episode-copy">
           <p class="eyebrow">RELATED EPISODE</p>
-          <h2 id="episode-title">从数字，到一套真实工位。</h2>
-          <p>相关视频会讲解如何把起始范围落实到桌子、椅子与显示器。发布后可从下面的平台继续观看。</p>
+          <h2 id="episode-title">{relatedEpisode.title}</h2>
+          <p>{relatedEpisode.summary}</p>
           <div class="platform-links" aria-label="视频发布平台">
-            <span>B站 <small>待发布</small></span>
-            <span>YouTube <small>待发布</small></span>
-            <span>微信公众号 <small>待发布</small></span>
-            <span>抖音 <small>待发布</small></span>
+            {relatedEpisode.destinations.map((destination) => destination.url ? (
+              <a href={destination.url} target="_blank" rel="noreferrer">{destination.label}</a>
+            ) : (
+              <span>{destination.label} <small>待发布</small></span>
+            ))}
           </div>
         </div>
         <div class="episode-placeholder" role="img" aria-label="视频封面预留区域，十六比九">
-          <div class="safe-area"><span>16:9 封面预留</span><small>中央 4:3 安全区域</small></div>
+          {relatedEpisode.cover ? (
+            <img src={relatedEpisode.cover} alt={relatedEpisode.coverAlt} />
+          ) : (
+            <div class="safe-area"><span>16:9 封面预留</span><small>中央 4:3 安全区域</small></div>
+          )}
         </div>
       </section>
 

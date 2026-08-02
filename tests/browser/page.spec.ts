@@ -83,6 +83,19 @@ test('completes calibration, requests reconfirmation after height changes, and r
   await expect(page.getByRole('button', { name: '开始坐姿校准' })).toBeVisible();
 });
 
+test('supports pausing, skipping, and completing standing calibration independently', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('workstation-fit:onboarding-seen', 'true'));
+  await page.goto('/');
+  await page.getByRole('button', { name: '站着' }).click();
+  await page.getByRole('button', { name: '开始站姿校准' }).click();
+  await expect(page.getByText('1 / 2')).toBeVisible();
+  await page.getByRole('button', { name: '稍后继续' }).click();
+  await expect(page.getByRole('button', { name: '继续站姿校准' })).toBeVisible();
+  await page.getByRole('button', { name: '继续站姿校准' }).click();
+  await page.getByRole('button', { name: '跳过校准' }).click();
+  await expect(page.getByRole('button', { name: '开始站姿校准' })).toBeVisible();
+});
+
 test('onboarding is skippable, replayable, and leaves fit values unchanged', async ({ page }) => {
   await page.goto('/');
   const dialog = page.getByRole('dialog', { name: '先输入身高' });
@@ -120,6 +133,18 @@ test('uses a compact top 3D viewport during mobile calibration', async ({ page }
   expect(box!.y).toBeLessThan(2);
   expect(box!.height).toBeGreaterThan(290);
   expect(box!.height).toBeLessThan(330);
+  await expect(page.getByRole('heading', { name: '先看脚掌' })).toBeInViewport({ ratio: 1 });
+  await expect(page.getByText('坐到底并靠住椅背。', { exact: false })).toBeInViewport({ ratio: 1 });
+  await expect(page.getByRole('button', { name: '稍后继续' })).toBeInViewport({ ratio: 1 });
+  await expect(page.getByRole('button', { name: '跳过校准' })).toBeInViewport({ ratio: 1 });
+  await expect(page.getByRole('button', { name: '这一步好了' })).toBeInViewport({ ratio: 1 });
+
+  const slider = page.getByRole('slider', { name: '微调椅面高度，厘米' });
+  await slider.scrollIntoViewIfNeeded();
+  await expect(slider).toBeInViewport({ ratio: 1 });
+  const sliderBox = await slider.boundingBox();
+  const stickyStageBox = await stage.boundingBox();
+  expect(sliderBox!.y).toBeGreaterThanOrEqual(stickyStageBox!.y + stickyStageBox!.height);
 });
 
 test('keeps calculation and calibration available without WebGL and with reduced motion', async ({ page }) => {

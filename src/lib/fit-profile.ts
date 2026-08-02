@@ -1,6 +1,7 @@
 import type { Posture } from './ergonomics';
+import { adjustableResultKeys, calibrationStepCount, createDefaultOffsets, type AdjustableResultKey } from './calibration';
 
-export type AdjustableResultKey = 'seat' | 'sittingDesk' | 'standingDesk' | 'sittingMonitorTop' | 'standingMonitorTop';
+export type { AdjustableResultKey } from './calibration';
 export type CalibrationStatus = 'not-started' | 'in-progress' | 'complete' | 'reconfirm';
 
 export type PostureCalibration = {
@@ -16,8 +17,6 @@ export type FitProfile = {
   onboardingSeen: boolean;
 };
 
-const stepCount: Record<Posture, number> = { sitting: 3, standing: 2 };
-
 const clampHeight = (height: number) => Math.max(145, Math.min(205, Math.round(height)));
 const clampOffset = (offset: number) => Math.max(-8, Math.min(8, Math.round(offset)));
 
@@ -25,13 +24,7 @@ export function createFitProfile(height = 173): FitProfile {
   return {
     version: 1,
     height: clampHeight(height),
-    offsets: {
-      seat: 0,
-      sittingDesk: 0,
-      standingDesk: 0,
-      sittingMonitorTop: 0,
-      standingMonitorTop: 0,
-    },
+    offsets: createDefaultOffsets(),
     calibration: {
       sitting: { step: 0, status: 'not-started' },
       standing: { step: 0, status: 'not-started' },
@@ -42,7 +35,7 @@ export function createFitProfile(height = 173): FitProfile {
 
 function isOffsetRecord(value: unknown): value is FitProfile['offsets'] {
   if (!value || typeof value !== 'object') return false;
-  return ['seat', 'sittingDesk', 'standingDesk', 'sittingMonitorTop', 'standingMonitorTop']
+  return adjustableResultKeys
     .every((key) => typeof (value as Record<string, unknown>)[key] === 'number');
 }
 
@@ -75,11 +68,11 @@ export function parseFitProfile(serialized: string | null): FitProfile {
       ) as FitProfile['offsets'],
       calibration: {
         sitting: {
-          step: Math.max(0, Math.min(stepCount.sitting, Math.round(value.calibration.sitting.step))),
+          step: Math.max(0, Math.min(calibrationStepCount.sitting, Math.round(value.calibration.sitting.step))),
           status: value.calibration.sitting.status,
         },
         standing: {
-          step: Math.max(0, Math.min(stepCount.standing, Math.round(value.calibration.standing.step))),
+          step: Math.max(0, Math.min(calibrationStepCount.standing, Math.round(value.calibration.standing.step))),
           status: value.calibration.standing.status,
         },
       },
@@ -116,10 +109,10 @@ export function setHeight(profile: FitProfile, height: number): FitProfile {
 
 export function advanceCalibration(profile: FitProfile, posture: Posture): FitProfile {
   const current = profile.calibration[posture];
-  const nextStep = Math.min(stepCount[posture], current.step + 1);
+  const nextStep = Math.min(calibrationStepCount[posture], current.step + 1);
   const next: PostureCalibration = {
     step: nextStep,
-    status: nextStep === stepCount[posture] ? 'complete' : 'in-progress',
+    status: nextStep === calibrationStepCount[posture] ? 'complete' : 'in-progress',
   };
 
   return {
@@ -132,6 +125,13 @@ export function restartCalibration(profile: FitProfile, posture: Posture): FitPr
   return {
     ...profile,
     calibration: { ...profile.calibration, [posture]: { step: 0, status: 'in-progress' } },
+  };
+}
+
+export function skipCalibration(profile: FitProfile, posture: Posture): FitProfile {
+  return {
+    ...profile,
+    calibration: { ...profile.calibration, [posture]: { step: 0, status: 'not-started' } },
   };
 }
 

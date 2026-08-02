@@ -1,5 +1,6 @@
 import {
   calculateWorkstation,
+  evidenceChains,
   roundRange,
   type EvidenceKey,
   type MetricKey,
@@ -8,15 +9,17 @@ import {
   type ResultKey,
   type WorkstationResult,
 } from '../lib/ergonomics';
+import { adjustableResultKeys, calibrationSteps, type AdjustableResultKey } from '../lib/calibration';
+import { createOnboarding } from './onboarding';
 import {
   advanceCalibration,
   createFitProfile,
   markOnboardingSeen,
   parseFitProfile,
   restartCalibration,
+  skipCalibration,
   setHeight as updateProfileHeight,
   setOffset,
-  type AdjustableResultKey,
   type FitProfile,
 } from '../lib/fit-profile';
 
@@ -27,13 +30,6 @@ type CardDefinition = {
   label: string;
   hint: string;
   adjustable?: AdjustableResultKey;
-};
-
-type CalibrationStep = {
-  key: AdjustableResultKey;
-  metric: MetricKey;
-  title: string;
-  instruction: string;
 };
 
 const cards: Record<Posture, CardDefinition[]> = {
@@ -48,24 +44,6 @@ const cards: Record<Posture, CardDefinition[]> = {
     { key: 'monitorDistance', evidence: 'distance', metric: 'distance', label: '观看距离', hint: '观察起点，不保存为精确目标' },
   ],
 };
-
-const calibrationSteps: Record<Posture, CalibrationStep[]> = {
-  sitting: [
-    { key: 'seat', metric: 'seat', title: '先看脚掌', instruction: '坐到底并靠住椅背。上下微调椅面，直到双脚稳定着地，膝盖接近或略高于椅面。' },
-    { key: 'sittingDesk', metric: 'desk', title: '再看手肘', instruction: '肩膀完全放松，让上臂自然下垂。微调桌面，使键鼠接近手肘高度。' },
-    { key: 'sittingMonitorTop', metric: 'monitor', title: '最后看视线', instruction: '头颈保持自然，平视前方。微调屏幕，让顶部不高于眼睛。' },
-  ],
-  standing: [
-    { key: 'standingDesk', metric: 'desk', title: '先看手肘', instruction: '站直但不要刻意挺胸，肩膀放松。微调桌面，使键鼠接近自然手肘高度。' },
-    { key: 'standingMonitorTop', metric: 'monitor', title: '再看视线', instruction: '头颈保持自然。微调屏幕，让顶部不高于眼睛，再确认不需要低头或仰头。' },
-  ],
-};
-
-const onboardingSteps = [
-  { target: 'height', title: '先输入身高', copy: '身高只决定可追溯的起始范围。腿、躯干和手臂比例的差异，会在身体校准里处理。' },
-  { target: 'posture', title: '坐姿与站姿分开', copy: '两种姿态的桌面与屏幕位置独立保存，切换时不会互相覆盖。' },
-  { target: 'scene', title: '直接拖动机器人', copy: '拖动可旋转，滚轮或双指可缩放。选中一个数值时，对应部位和尺寸线会高亮。' },
-];
 
 const required = <T extends Element>(selector: string): T => {
   const element = document.querySelector<T>(selector);
@@ -86,14 +64,12 @@ const calibrationPanel = required<HTMLElement>('#calibration-panel');
 const calibrationProgress = required<HTMLElement>('#calibration-progress');
 const calibrationTitle = required<HTMLElement>('#calibration-title');
 const calibrationInstruction = required<HTMLElement>('#calibration-instruction');
-const onboardingDialog = required<HTMLDialogElement>('#onboarding-dialog');
 
 let profile: FitProfile = parseFitProfile(localStorage.getItem(storageKey));
 let posture: Posture = 'sitting';
 let activeMetric: MetricKey = 'desk';
 let activeResult: ResultKey = 'sittingDesk';
 let calibrating: Posture | null = null;
-let onboardingStep = 0;
 
 let sceneController: {
   update: (state: { height: number; posture: Posture; activeMetric: MetricKey; result: WorkstationResult }) => void;
@@ -125,14 +101,9 @@ const shiftRange = (range: Range, amount: number): Range => ({
 });
 
 function adjustedResult(result: WorkstationResult): WorkstationResult {
-  return {
-    ...result,
-    seat: shiftRange(result.seat, profile.offsets.seat),
-    sittingDesk: shiftRange(result.sittingDesk, profile.offsets.sittingDesk),
-    standingDesk: shiftRange(result.standingDesk, profile.offsets.standingDesk),
-    sittingMonitorTop: shiftRange(result.sittingMonitorTop, profile.offsets.sittingMonitorTop),
-    standingMonitorTop: shiftRange(result.standingMonitorTop, profile.offsets.standingMonitorTop),
-  };
+  const adjusted = { ...result };
+  for (const key of adjustableResultKeys) adjusted[key] = shiftRange(result[key], profile.offsets[key]);
+  return adjusted;
 }
 
 function formatRange(range: Range) {
@@ -149,6 +120,15 @@ function statusCopy(status: 'reference' | 'trend' | 'guidance') {
   if (status === 'trend') return '趋势估算';
   if (status === 'guidance') return '通用指南';
   return '来源覆盖';
+}
+
+function evidenceBoundaryCopy(definition: CardDefinition, status: 'reference' | 'trend' | 'guidance') {
+  const coverage = evidenceChains[definition.evidence].sourceCoverage;
+  if (status === 'guidance') return '来自通用专业指南，不按身高推算。';
+  if (status === 'trend' && coverage) {
+    return `已超出 ${coverage.minHeight}–${coverage.maxHeight} cm 来源节点，当前为项目趋势估算；建议完成身体校准。`;
+  }
+  return coverage ? `当前身高位于 ${coverage.minHeight}–${coverage.maxHeight} cm 来源节点覆盖内。` : '';
 }
 
 function updateScene(result: WorkstationResult) {
@@ -212,6 +192,7 @@ function renderResults(result: WorkstationResult) {
         <div class="result-meta">
           <span class="evidence-status is-${status}">${statusCopy(status)}</span>
           <a class="source-footnote" href="#evidence-${definition.evidence}" aria-label="${definition.label}来源">来源 ↘</a>
+          <small class="evidence-boundary">${evidenceBoundaryCopy(definition, status)}</small>
         </div>
       </div>
       ${definition.adjustable ? `
@@ -326,6 +307,14 @@ function exitCalibration() {
   render();
 }
 
+function skipCurrentCalibration() {
+  if (!calibrating) return;
+  profile = skipCalibration(profile, calibrating);
+  calibrating = null;
+  saveProfile();
+  render();
+}
+
 function nextCalibration() {
   if (!calibrating) return;
   const currentPosture = calibrating;
@@ -335,33 +324,11 @@ function nextCalibration() {
   render();
 }
 
-function clearOnboardingTarget() {
-  document.querySelector('.onboarding-target')?.classList.remove('onboarding-target');
-}
-
-function renderOnboardingStep() {
-  clearOnboardingTarget();
-  const step = onboardingSteps[onboardingStep];
-  required<HTMLElement>('#onboarding-title').textContent = step.title;
-  required<HTMLElement>('#onboarding-copy').textContent = step.copy;
-  required<HTMLElement>('#onboarding-progress').textContent = `${onboardingStep + 1} / ${onboardingSteps.length}`;
-  required<HTMLButtonElement>('#next-onboarding').textContent = onboardingStep === onboardingSteps.length - 1 ? '开始使用' : '下一步';
-  document.querySelector(`[data-onboarding-target="${step.target}"]`)?.classList.add('onboarding-target');
-}
-
-function showOnboarding() {
-  onboardingStep = 0;
-  renderOnboardingStep();
-  if (!onboardingDialog.open) onboardingDialog.show();
-}
-
-function finishOnboarding() {
-  clearOnboardingTarget();
+const onboarding = createOnboarding(() => {
   profile = markOnboardingSeen(profile);
   saveProfile();
   localStorage.setItem('workstation-fit:onboarding-seen', 'true');
-  onboardingDialog.close();
-}
+});
 
 heightNumber.addEventListener('change', () => setHeight(Number(heightNumber.value) || profile.height));
 heightNumber.addEventListener('keydown', (event) => {
@@ -380,6 +347,7 @@ document.querySelectorAll<HTMLButtonElement>('[data-posture]').forEach((button) 
 
 startCalibrationButton.addEventListener('click', startCalibration);
 required<HTMLButtonElement>('#exit-calibration').addEventListener('click', exitCalibration);
+required<HTMLButtonElement>('#skip-calibration').addEventListener('click', skipCurrentCalibration);
 required<HTMLButtonElement>('#next-calibration').addEventListener('click', nextCalibration);
 
 required<HTMLButtonElement>('#reset-profile').addEventListener('click', () => {
@@ -391,23 +359,10 @@ required<HTMLButtonElement>('#reset-profile').addEventListener('click', () => {
   render();
 });
 
-required<HTMLButtonElement>('#replay-onboarding').addEventListener('click', showOnboarding);
-required<HTMLButtonElement>('#skip-onboarding').addEventListener('click', finishOnboarding);
-required<HTMLButtonElement>('#next-onboarding').addEventListener('click', () => {
-  if (onboardingStep === onboardingSteps.length - 1) {
-    finishOnboarding();
-  } else {
-    onboardingStep += 1;
-    renderOnboardingStep();
-  }
-});
-onboardingDialog.addEventListener('cancel', (event) => {
-  event.preventDefault();
-  finishOnboarding();
-});
+required<HTMLButtonElement>('#replay-onboarding').addEventListener('click', onboarding.show);
 
 render();
 
 if (!profile.onboardingSeen && localStorage.getItem('workstation-fit:onboarding-seen') !== 'true') {
-  setTimeout(showOnboarding, 450);
+  setTimeout(onboarding.show, 450);
 }
