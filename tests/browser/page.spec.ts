@@ -25,7 +25,7 @@ test('presents the independent calculator before evidence and related content', 
   await expect(page).toHaveURL(/#evidence-sittingMonitorTop$/);
 });
 
-test('persists slider offsets locally and keeps sitting and standing separate', async ({ page }) => {
+test('shows suggested starts and reference ranges without numeric adjustment controls', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('workstation-fit:onboarding-seen', 'true'));
   const externalRequests: string[] = [];
   page.on('request', (request) => {
@@ -33,24 +33,20 @@ test('persists slider offsets locally and keeps sitting and standing separate', 
   });
   await page.goto('/');
 
-  const seatSlider = page.getByRole('slider', { name: '微调椅面高度，厘米' });
-  await seatSlider.focus();
-  await seatSlider.press('End');
-  await expect(seatSlider).toHaveValue('8');
-  await expect(page.getByText('高 8 cm', { exact: true })).toBeVisible();
+  const seatCard = page.locator('[data-result="seat"]');
+  await expect(seatCard.getByText('建议从', { exact: true })).toBeVisible();
+  await expect(seatCard.getByText(/参考范围 \d+–\d+ cm/)).toBeVisible();
+  await expect(page.getByText('身体微调', { exact: true })).toHaveCount(0);
+  await expect(page.locator('#results').getByRole('slider')).toHaveCount(0);
 
-  await page.getByRole('button', { name: '站着' }).click();
-  const standingDesk = page.getByRole('slider', { name: '微调桌面高度，厘米' });
-  await standingDesk.focus();
-  await standingDesk.press('Home');
-  await expect(standingDesk).toHaveValue('-8');
-  await expect(page.getByText('观看距离').locator('..').locator('..').getByRole('slider')).toHaveCount(0);
+  await page.locator('#height-number').fill('180');
+  await page.locator('#height-number').press('Enter');
 
   await page.reload();
-  await expect(page.getByRole('slider', { name: '微调椅面高度，厘米' })).toHaveValue('8');
-  const profile = await page.evaluate(() => JSON.parse(localStorage.getItem('workstation-fit:profile:v1')!));
-  expect(profile.offsets.seat).toBe(8);
-  expect(profile.offsets.standingDesk).toBe(-8);
+  await expect(page.getByLabel('身高，厘米')).toHaveValue('180');
+  const profile = await page.evaluate(() => JSON.parse(localStorage.getItem('workstation-fit:profile:v2')!));
+  expect(profile.height).toBe(180);
+  expect(profile).not.toHaveProperty('offsets');
   expect(externalRequests).toEqual([]);
 });
 
@@ -62,43 +58,45 @@ test('recovers safely from damaged local profile data', async ({ page }) => {
   await page.goto('/');
 
   await expect(page.getByLabel('身高，厘米')).toHaveValue('173');
-  await expect(page.getByRole('slider', { name: '微调椅面高度，厘米' })).toHaveValue('0');
+  await expect(page.locator('[data-result="seat"]').getByText('建议从', { exact: true })).toBeVisible();
 });
 
-test('completes calibration, requests reconfirmation after height changes, and resets explicitly', async ({ page }) => {
+test('completes physical checks and requests reconfirmation after height changes', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('workstation-fit:onboarding-seen', 'true'));
   await page.goto('/');
 
-  await page.getByRole('button', { name: '开始坐姿校准' }).click();
+  await page.getByRole('button', { name: '开始检查坐姿' }).click();
   await expect(page.getByText('1 / 3')).toBeVisible();
   await expect(page.getByRole('heading', { name: '先看脚掌' })).toBeVisible();
-  await page.getByRole('button', { name: '这一步好了' }).click();
+  await page.getByRole('button', { name: '已调整，下一步' }).click();
   await expect(page.getByRole('heading', { name: '再看手肘' })).toBeVisible();
-  await page.getByRole('button', { name: '这一步好了' }).click();
+  await page.getByRole('button', { name: '已调整，下一步' }).click();
   await expect(page.getByRole('heading', { name: '最后看视线' })).toBeVisible();
-  await page.getByRole('button', { name: '这一步好了' }).click();
-  await expect(page.getByText('坐姿已校准。数值已保存在当前浏览器。')).toBeVisible();
+  await page.getByRole('button', { name: '完成检查' }).click();
+  await expect(page.getByText('坐姿已检查。进度已保存在当前浏览器。')).toBeVisible();
+  await expect(page.getByRole('button', { name: '重新检查坐姿' })).toBeVisible();
 
   await page.locator('#height-number').fill('180');
   await page.locator('#height-number').press('Enter');
   await expect(page.getByText('身高已改变，请重新确认坐姿的身体接触点。')).toBeVisible();
 
-  page.once('dialog', (dialog) => dialog.accept());
-  await page.getByRole('button', { name: '重置校准' }).click();
-  await expect(page.getByRole('button', { name: '开始坐姿校准' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '重新检查坐姿' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '重置校准' })).toHaveCount(0);
 });
 
-test('supports pausing, skipping, and completing standing calibration independently', async ({ page }) => {
+test('supports pausing and completing standing checks independently', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('workstation-fit:onboarding-seen', 'true'));
   await page.goto('/');
   await page.getByRole('button', { name: '站着' }).click();
-  await page.getByRole('button', { name: '开始站姿校准' }).click();
+  await page.getByRole('button', { name: '开始检查站姿' }).click();
   await expect(page.getByText('1 / 2')).toBeVisible();
   await page.getByRole('button', { name: '稍后继续' }).click();
-  await expect(page.getByRole('button', { name: '继续站姿校准' })).toBeVisible();
-  await page.getByRole('button', { name: '继续站姿校准' }).click();
-  await page.getByRole('button', { name: '跳过校准' }).click();
-  await expect(page.getByRole('button', { name: '开始站姿校准' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '继续检查站姿' })).toBeVisible();
+  await page.getByRole('button', { name: '继续检查站姿' }).click();
+  await expect(page.getByRole('button', { name: '跳过校准' })).toHaveCount(0);
+  await page.getByRole('button', { name: '已调整，下一步' }).click();
+  await page.getByRole('button', { name: '完成检查' }).click();
+  await expect(page.getByRole('button', { name: '重新检查站姿' })).toBeVisible();
 });
 
 test('onboarding is skippable, replayable, and leaves fit values unchanged', async ({ page }) => {
@@ -111,14 +109,8 @@ test('onboarding is skippable, replayable, and leaves fit values unchanged', asy
   await expect(page.getByRole('dialog', { name: '直接拖动机器人' })).toBeVisible();
   await page.getByRole('button', { name: '开始使用' }).click();
 
-  const profile = await page.evaluate(() => JSON.parse(localStorage.getItem('workstation-fit:profile:v1')!));
-  expect(profile.offsets).toEqual({
-    seat: 0,
-    sittingDesk: 0,
-    standingDesk: 0,
-    sittingMonitorTop: 0,
-    standingMonitorTop: 0,
-  });
+  const profile = await page.evaluate(() => JSON.parse(localStorage.getItem('workstation-fit:profile:v2')!));
+  expect(profile).not.toHaveProperty('offsets');
   await page.reload();
   await expect(page.locator('#onboarding-dialog')).not.toBeVisible();
   await page.getByRole('button', { name: '使用说明' }).click();
@@ -130,7 +122,7 @@ test('uses a compact top 3D viewport during mobile calibration', async ({ page }
   test.skip(testInfo.project.name !== 'mobile');
   await page.addInitScript(() => localStorage.setItem('workstation-fit:onboarding-seen', 'true'));
   await page.goto('/');
-  await page.getByRole('button', { name: '开始坐姿校准' }).click();
+  await page.getByRole('button', { name: '开始检查坐姿' }).click();
 
   const stage = page.locator('#stage');
   const box = await stage.boundingBox();
@@ -141,15 +133,7 @@ test('uses a compact top 3D viewport during mobile calibration', async ({ page }
   await expect(page.getByRole('heading', { name: '先看脚掌' })).toBeInViewport({ ratio: 1 });
   await expect(page.getByText('坐到底并靠住椅背。', { exact: false })).toBeInViewport({ ratio: 1 });
   await expect(page.getByRole('button', { name: '稍后继续' })).toBeInViewport({ ratio: 1 });
-  await expect(page.getByRole('button', { name: '跳过校准' })).toBeInViewport({ ratio: 1 });
-  await expect(page.getByRole('button', { name: '这一步好了' })).toBeInViewport({ ratio: 1 });
-
-  const slider = page.getByRole('slider', { name: '微调椅面高度，厘米' });
-  await slider.scrollIntoViewIfNeeded();
-  await expect(slider).toBeInViewport({ ratio: 1 });
-  const sliderBox = await slider.boundingBox();
-  const stickyStageBox = await stage.boundingBox();
-  expect(sliderBox!.y).toBeGreaterThanOrEqual(stickyStageBox!.y + stickyStageBox!.height);
+  await expect(page.getByRole('button', { name: '已调整，下一步' })).toBeInViewport({ ratio: 1 });
 });
 
 test('keeps calculation and calibration available without WebGL and with reduced motion', async ({ page }) => {
@@ -159,10 +143,9 @@ test('keeps calculation and calibration available without WebGL and with reduced
   await page.goto('/');
 
   await expect(page.getByText('当前设备无法显示 3D 场景，数值计算与身体校准仍可正常使用。')).toBeVisible();
-  await page.getByRole('button', { name: '开始坐姿校准' }).click();
-  await page.getByRole('slider', { name: '微调椅面高度，厘米' }).focus();
-  await page.getByRole('slider', { name: '微调椅面高度，厘米' }).press('ArrowRight');
-  await expect(page.getByText('高 1 cm', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '开始检查坐姿' }).click();
+  await page.getByRole('button', { name: '已调整，下一步' }).click();
+  await expect(page.getByRole('heading', { name: '再看手肘' })).toBeVisible();
   await page.getByRole('button', { name: '稍后继续' }).click();
-  await expect(page.getByRole('button', { name: '继续坐姿校准' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '继续检查坐姿' })).toBeVisible();
 });

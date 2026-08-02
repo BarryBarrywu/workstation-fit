@@ -88,12 +88,12 @@ h1 { max-width: 420px; margin: 0; font-size: clamp(54px, 5.2vw, 78px); line-heig
 .number-field input:focus-visible { box-shadow: 0 2px 0 var(--amber); }
 .number-field span { color: rgba(32, 37, 34, 0.5); font-size: 12px; }
 .height-range { width: 100%; height: 24px; margin: 0; appearance: none; background: transparent; cursor: ew-resize; }
-.height-range::-webkit-slider-runnable-track, .offset-row input::-webkit-slider-runnable-track { height: 2px; background: linear-gradient(90deg, var(--graphite), var(--oxidized)); }
-.height-range::-webkit-slider-thumb, .offset-row input::-webkit-slider-thumb { width: 20px; height: 20px; margin-top: -9px; appearance: none; border: 5px solid var(--paper); border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 1px rgba(32, 37, 34, 0.18), 0 4px 14px rgba(32, 37, 34, 0.18); }
-.height-range::-moz-range-track, .offset-row input::-moz-range-track { height: 2px; background: var(--oxidized); }
-.height-range::-moz-range-thumb, .offset-row input::-moz-range-thumb { width: 12px; height: 12px; border: 4px solid var(--paper); border-radius: 50%; background: var(--amber); }
-.height-range:focus-visible, .offset-row input:focus-visible { outline: 2px solid var(--amber); outline-offset: 4px; }
-.range-ends, .offset-ends { display: flex; justify-content: space-between; color: rgba(32, 37, 34, 0.35); font-family: "DIN Alternate", ui-monospace, monospace; font-size: 10px; }
+.height-range::-webkit-slider-runnable-track { height: 2px; background: linear-gradient(90deg, var(--graphite), var(--oxidized)); }
+.height-range::-webkit-slider-thumb { width: 20px; height: 20px; margin-top: -9px; appearance: none; border: 5px solid var(--paper); border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 1px rgba(32, 37, 34, 0.18), 0 4px 14px rgba(32, 37, 34, 0.18); }
+.height-range::-moz-range-track { height: 2px; background: var(--oxidized); }
+.height-range::-moz-range-thumb { width: 12px; height: 12px; border: 4px solid var(--paper); border-radius: 50%; background: var(--amber); }
+.height-range:focus-visible { outline: 2px solid var(--amber); outline-offset: 4px; }
+.range-ends { display: flex; justify-content: space-between; color: rgba(32, 37, 34, 0.35); font-family: "DIN Alternate", ui-monospace, monospace; font-size: 10px; }
 
 .posture-switch { width: 100%; height: 48px; margin: 28px 0 0; padding: 4px; border: 1px solid rgba(32, 37, 34, 0.1); border-radius: 15px; background: rgba(249, 251, 250, 0.62); display: grid; grid-template-columns: 1fr 1fr; position: relative; transition: box-shadow 220ms ease; }
 .posture-button { border: 0; background: transparent; position: relative; z-index: 1; cursor: pointer; font-size: 13px; font-weight: 650; }
@@ -106,7 +106,7 @@ h1 { max-width: 420px; margin: 0; font-size: clamp(54px, 5.2vw, 78px); line-heig
 .calibration-panel .section-label { margin-bottom: 7px; color: #9a601f; }
 .calibration-panel h2 { margin: 0; font-size: 25px; letter-spacing: -0.04em; }
 .calibration-panel p:not(.section-label) { margin: 9px 0 0; color: rgba(32, 37, 34, 0.64); font-size: 12px; line-height: 1.7; }
-.calibration-actions { margin-top: 18px; display: flex; justify-content: space-between; gap: 12px; }
+.calibration-actions { margin-top: 18px; display: flex; justify-content: flex-end; gap: 12px; }
 .calibration-actions button { padding: 10px 14px; border-radius: 11px; cursor: pointer; font-size: 11px; }
 .calibration-actions button:not(.primary-button) { border: 1px solid var(--line); background: transparent; }
 .calibration-actions .primary-button { border: 0; }
@@ -122,25 +122,19 @@ h1 { max-width: 420px; margin: 0; font-size: clamp(54px, 5.2vw, 78px); line-heig
 .result-card:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
 .result-main { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .result-copy > span { display: block; font-size: 13px; font-weight: 650; }
-.result-copy strong { margin-top: 4px; display: flex; align-items: baseline; gap: 6px; font-family: "DIN Alternate", ui-monospace, monospace; }
+.result-copy strong { display: flex; align-items: baseline; gap: 6px; font-family: "DIN Alternate", ui-monospace, monospace; }
 .result-copy strong b { font-size: 28px; letter-spacing: -0.04em; }
 .result-copy strong small { color: rgba(32, 37, 34, 0.5); font-size: 11px; }
 .result-copy p { margin: 5px 0 0; color: rgba(32, 37, 34, 0.58); font-size: 12px; line-height: 1.55; text-wrap: pretty; }
+.suggestion-line { margin-top: 7px; display: flex; align-items: baseline; gap: 7px; color: rgba(32, 37, 34, 0.52); font-size: 11px; }
+.suggestion-line strong { color: currentColor; }
+.range-line { margin-top: 7px; }
+.result-copy .reference-range { margin-top: 1px; color: var(--metal); font-size: 11px; font-weight: 650; }
 .result-meta { display: flex; align-items: flex-end; gap: 7px; flex-direction: column; }
 .evidence-status { padding: 5px 8px; border: 1px solid rgba(32, 37, 34, 0.11); border-radius: 999px; color: rgba(32, 37, 34, 0.62); font-size: 11px; white-space: nowrap; }
 .evidence-status.is-trend { border-color: rgba(213, 145, 61, 0.34); color: #9a601f; background: rgba(255, 249, 239, 0.82); }
 .source-footnote { min-height: 32px; padding: 6px 0 0 10px; color: rgba(32, 37, 34, 0.62); font-size: 11px; text-underline-offset: 3px; }
 .source-footnote:hover { color: var(--graphite); }
-.offset-control { margin-top: 15px; }
-.offset-heading { display: flex; align-items: center; justify-content: space-between; color: rgba(32, 37, 34, 0.6); font-size: 11px; }
-.offset-heading strong { color: var(--metal); font-weight: 650; }
-.offset-row { margin-top: 7px; display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; gap: 9px; }
-.offset-row button { width: 40px; height: 40px; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: rgba(249, 251, 250, 0.62); cursor: pointer; font-size: 17px; }
-.offset-row button:hover { background: var(--paper); }
-.offset-row button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
-.offset-row input { width: 100%; height: 24px; margin: 0; appearance: none; background: transparent; cursor: ew-resize; }
-.offset-ends { margin-inline: 49px; font-size: 10px; }
-.observation-note { margin: 14px 0 0; color: rgba(32, 37, 34, 0.58); font-size: 12px; }
 
 .stage { height: calc(100vh - 82px); min-height: 720px; max-height: 1100px; position: sticky; top: 82px; align-self: start; overflow: hidden; isolation: isolate; transition: box-shadow 220ms ease; }
 .stage::before { content: ""; position: absolute; z-index: -1; width: min(82%, 780px); aspect-ratio: 1; border-radius: 50%; background: rgba(255, 255, 255, 0.46); left: 50%; top: 47%; transform: translate(-50%, -50%); }

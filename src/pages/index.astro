@@ -28,7 +28,6 @@ const classLabels = {
       </a>
       <nav class="header-actions" aria-label="工具操作">
         <button id="replay-onboarding" type="button">使用说明</button>
-        <button id="reset-profile" type="button">重置校准</button>
         <span class="header-note">开源 · 数据留在本机</span>
       </nav>
     </header>
@@ -47,7 +46,7 @@ const classLabels = {
               <h2 id="calibration-callout-title">30 秒身体校准</h2>
               <p id="calibration-summary">按脚掌、手肘和视线，确认坐姿的三个关键位置。</p>
             </div>
-            <button id="start-calibration" class="primary-button" type="button">开始坐姿校准</button>
+            <button id="start-calibration" class="primary-button" type="button">开始检查坐姿</button>
           </aside>
 
           <div class="height-control" data-onboarding-target="height">
@@ -71,21 +70,19 @@ const classLabels = {
 
           <div id="calibration-panel" class="calibration-panel" hidden>
             <div>
-              <p class="section-label">身体校准 <span id="calibration-progress"></span></p>
+              <p class="section-label">身体检查 <span id="calibration-progress"></span></p>
               <h2 id="calibration-title"></h2>
               <p id="calibration-instruction"></p>
             </div>
             <div class="calibration-actions">
               <button id="exit-calibration" type="button">稍后继续</button>
-              <button id="skip-calibration" type="button">跳过校准</button>
-              <button id="next-calibration" class="primary-button" type="button">这一步好了</button>
+              <button id="next-calibration" class="primary-button" type="button">已调整，下一步</button>
             </div>
           </div>
 
           <div class="result-heading">
             <div>
-              <p class="section-label">起始范围</p>
-              <p id="confidence-note">每一项都单独标示来源覆盖状态</p>
+              <p class="section-label">建议设置</p>
             </div>
             <span id="posture-caption">坐姿</span>
           </div>

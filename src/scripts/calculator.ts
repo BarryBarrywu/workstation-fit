@@ -4,21 +4,17 @@ import {
   type EvidenceKey,
   type MetricKey,
   type Posture,
-  type Range,
   type ResultKey,
   type WorkstationResult,
 } from '../lib/ergonomics';
-import { adjustableResultKeys, calibrationSteps, type AdjustableResultKey } from '../lib/calibration';
+import { calibrationSteps } from '../lib/calibration';
 import { createOnboarding } from './onboarding';
 import {
   advanceCalibration,
-  createFitProfile,
   markOnboardingSeen,
   parseFitProfile,
   restartCalibration,
-  skipCalibration,
   setHeight as updateProfileHeight,
-  setOffset,
   type FitProfile,
 } from '../lib/fit-profile';
 
@@ -28,19 +24,18 @@ type CardDefinition = {
   metric: MetricKey;
   label: string;
   hint: string;
-  adjustable?: AdjustableResultKey;
 };
 
 const cards: Record<Posture, CardDefinition[]> = {
   sitting: [
-    { key: 'seat', evidence: 'seat', metric: 'seat', label: '椅面高度', hint: '脚掌完全着地，膝盖接近或略高于椅面', adjustable: 'seat' },
-    { key: 'sittingDesk', evidence: 'sittingDesk', metric: 'desk', label: '桌面高度', hint: '肩膀放松，前臂自然接近桌面', adjustable: 'sittingDesk' },
-    { key: 'sittingMonitorTop', evidence: 'sittingMonitorTop', metric: 'monitor', label: '屏幕顶部', hint: '不高于自然眼线', adjustable: 'sittingMonitorTop' },
+    { key: 'seat', evidence: 'seat', metric: 'seat', label: '椅面高度', hint: '脚掌完全着地，膝盖接近或略高于椅面' },
+    { key: 'sittingDesk', evidence: 'sittingDesk', metric: 'desk', label: '桌面高度', hint: '肩膀放松，前臂自然接近桌面' },
+    { key: 'sittingMonitorTop', evidence: 'sittingMonitorTop', metric: 'monitor', label: '屏幕顶部', hint: '不高于自然眼线' },
   ],
   standing: [
-    { key: 'standingDesk', evidence: 'standingDesk', metric: 'desk', label: '桌面高度', hint: '肩膀放松，手腕与前臂接近一条线', adjustable: 'standingDesk' },
-    { key: 'standingMonitorTop', evidence: 'standingMonitorTop', metric: 'monitor', label: '屏幕顶部', hint: '不高于自然眼线', adjustable: 'standingMonitorTop' },
-    { key: 'monitorDistance', evidence: 'distance', metric: 'distance', label: '观看距离', hint: '观察起点，不保存为精确目标' },
+    { key: 'standingDesk', evidence: 'standingDesk', metric: 'desk', label: '桌面高度', hint: '肩膀放松，手腕与前臂接近一条线' },
+    { key: 'standingMonitorTop', evidence: 'standingMonitorTop', metric: 'monitor', label: '屏幕顶部', hint: '不高于自然眼线' },
+    { key: 'monitorDistance', evidence: 'distance', metric: 'distance', label: '观看距离', hint: '先保持一臂左右，再按阅读舒适度调整' },
   ],
 };
 
@@ -50,7 +45,8 @@ const required = <T extends Element>(selector: string): T => {
   return element;
 };
 
-const storageKey = 'workstation-fit:profile:v1';
+const storageKey = 'workstation-fit:profile:v2';
+const legacyStorageKey = 'workstation-fit:profile:v1';
 const heightNumber = required<HTMLInputElement>('#height-number');
 const heightRange = required<HTMLInputElement>('#height-range');
 const resultContainer = required<HTMLDivElement>('#results');
@@ -63,8 +59,10 @@ const calibrationPanel = required<HTMLElement>('#calibration-panel');
 const calibrationProgress = required<HTMLElement>('#calibration-progress');
 const calibrationTitle = required<HTMLElement>('#calibration-title');
 const calibrationInstruction = required<HTMLElement>('#calibration-instruction');
+const nextCalibrationButton = required<HTMLButtonElement>('#next-calibration');
 
-let profile: FitProfile = parseFitProfile(localStorage.getItem(storageKey));
+const storedProfile = localStorage.getItem(storageKey);
+let profile: FitProfile = parseFitProfile(storedProfile ?? localStorage.getItem(legacyStorageKey));
 let posture: Posture = 'sitting';
 let activeMetric: MetricKey = 'desk';
 let activeResult: ResultKey = 'sittingDesk';
@@ -74,13 +72,18 @@ let sceneController: {
   update: (state: { height: number; posture: Posture; activeMetric: MetricKey; result: WorkstationResult }) => void;
 } | undefined;
 
-const saveProfile = () => localStorage.setItem(storageKey, JSON.stringify(profile));
+const saveProfile = () => {
+  localStorage.setItem(storageKey, JSON.stringify(profile));
+  localStorage.removeItem(legacyStorageKey);
+};
+
+if (!storedProfile && localStorage.getItem(legacyStorageKey)) saveProfile();
 
 const loadScene = async () => {
   try {
     const { createWorkstationScene } = await import('../lib/workstation-scene');
     sceneController = await createWorkstationScene(stage, canvas);
-    updateScene(adjustedResult(calculateWorkstation(profile.height)));
+    updateScene(calculateWorkstation(profile.height));
   } catch {
     canvas.hidden = true;
     stage.querySelector<HTMLElement>('.stage-fallback')?.removeAttribute('hidden');
@@ -93,26 +96,9 @@ if ('requestIdleCallback' in window) {
   setTimeout(() => void loadScene(), 0);
 }
 
-const shiftRange = (range: Range, amount: number): Range => ({
-  min: range.min + amount,
-  max: range.max + amount,
-  reference: range.reference + amount,
-});
-
-function adjustedResult(result: WorkstationResult): WorkstationResult {
-  const adjusted = { ...result };
-  for (const key of adjustableResultKeys) adjusted[key] = shiftRange(result[key], profile.offsets[key]);
-  return adjusted;
-}
-
-function formatRange(range: Range) {
+function formatRange(range: { min: number; max: number; reference: number }) {
   const rounded = roundRange(range);
   return `${rounded.min}–${rounded.max}`;
-}
-
-function offsetCopy(offset: number) {
-  if (offset === 0) return '原始范围';
-  return `${offset > 0 ? '高' : '低'} ${Math.abs(offset)} cm`;
 }
 
 function updateScene(result: WorkstationResult) {
@@ -126,27 +112,6 @@ function selectResult(definition: CardDefinition, result: WorkstationResult) {
   updateScene(result);
 }
 
-function applyOffset(definition: CardDefinition, nextOffset: number) {
-  if (!definition.adjustable) return;
-  profile = setOffset(profile, definition.adjustable, nextOffset);
-  saveProfile();
-  activeMetric = definition.metric;
-  activeResult = definition.key;
-
-  const result = adjustedResult(calculateWorkstation(profile.height));
-  const card = resultContainer.querySelector<HTMLElement>(`[data-result="${definition.key}"]`);
-  const range = result[definition.key] as Range;
-  if (card) {
-    const value = card.querySelector<HTMLElement>('.range-value');
-    const offset = card.querySelector<HTMLElement>('.offset-copy');
-    const slider = card.querySelector<HTMLInputElement>('input[type="range"]');
-    if (value) value.textContent = formatRange(range);
-    if (offset) offset.textContent = offsetCopy(profile.offsets[definition.adjustable]);
-    if (slider) slider.value = String(profile.offsets[definition.adjustable]);
-  }
-  selectResult(definition, result);
-}
-
 function renderResults(result: WorkstationResult) {
   resultContainer.replaceChildren();
   const currentCalibrationKey = calibrating
@@ -154,23 +119,28 @@ function renderResults(result: WorkstationResult) {
     : null;
 
   for (const definition of cards[posture]) {
-    const range = result[definition.key] as Range;
+    const range = result[definition.key];
+    if (!range || !('reference' in range)) continue;
+    const rounded = roundRange(range);
     const status = result.evidenceStatus[definition.evidence];
     const card = document.createElement('article');
     card.className = [
       'result-card',
       activeResult === definition.key ? 'is-active' : '',
-      currentCalibrationKey === definition.adjustable ? 'is-calibration-target' : '',
+      currentCalibrationKey === definition.key ? 'is-calibration-target' : '',
     ].filter(Boolean).join(' ');
     card.dataset.metric = definition.metric;
     card.dataset.result = definition.key;
     card.tabIndex = 0;
-    const currentOffset = definition.adjustable ? profile.offsets[definition.adjustable] : 0;
+    const valueMarkup = definition.key === 'monitorDistance'
+      ? `<strong class="range-line"><b class="range-value">${formatRange(range)}</b><small>cm</small></strong>`
+      : `<div class="suggestion-line"><span>建议从</span><strong><b class="range-value">${rounded.reference}</b><small>cm</small></strong><span>开始</span></div>
+        <p class="reference-range">参考范围 ${formatRange(range)} cm</p>`;
     card.innerHTML = `
       <div class="result-main">
         <div class="result-copy">
           <span>${definition.label}</span>
-          <strong><b class="range-value">${formatRange(range)}</b><small>cm</small></strong>
+          ${valueMarkup}
           <p>${definition.hint}</p>
         </div>
         <div class="result-meta">
@@ -178,20 +148,10 @@ function renderResults(result: WorkstationResult) {
           <a class="source-footnote" href="#evidence-${definition.evidence}" aria-label="${definition.label}来源">来源 ↘</a>
         </div>
       </div>
-      ${definition.adjustable ? `
-        <div class="offset-control">
-          <div class="offset-heading"><span>身体微调</span><strong class="offset-copy">${offsetCopy(currentOffset)}</strong></div>
-          <div class="offset-row">
-            <button type="button" data-adjust="-1" aria-label="${definition.label}降低 1 厘米">−</button>
-            <input type="range" min="-8" max="8" step="1" value="${currentOffset}" aria-label="微调${definition.label}，厘米" />
-            <button type="button" data-adjust="1" aria-label="${definition.label}升高 1 厘米">+</button>
-          </div>
-          <div class="offset-ends" aria-hidden="true"><span>−8</span><span>0</span><span>+8</span></div>
-        </div>` : '<p class="observation-note">结合屏幕尺寸和文字大小观察，不保存偏移。</p>'}
     `;
 
     card.addEventListener('click', (event) => {
-      if ((event.target as Element).closest('a, button, input')) return;
+      if ((event.target as Element).closest('a')) return;
       selectResult(definition, result);
     });
     card.addEventListener('keydown', (event) => {
@@ -201,16 +161,6 @@ function renderResults(result: WorkstationResult) {
       }
     });
 
-    if (definition.adjustable) {
-      card.querySelector<HTMLInputElement>('input[type="range"]')?.addEventListener('input', (event) => {
-        applyOffset(definition, Number((event.currentTarget as HTMLInputElement).value));
-      });
-      card.querySelectorAll<HTMLButtonElement>('[data-adjust]').forEach((button) => {
-        button.addEventListener('click', () => {
-          applyOffset(definition, profile.offsets[definition.adjustable!] + Number(button.dataset.adjust));
-        });
-      });
-    }
     resultContainer.append(card);
   }
 }
@@ -230,17 +180,17 @@ function renderCalibration() {
   const state = profile.calibration[posture];
   const postureLabel = posture === 'sitting' ? '坐姿' : '站姿';
   calibrationSummary.textContent = state.status === 'complete'
-    ? `${postureLabel}已校准。数值已保存在当前浏览器。`
+    ? `${postureLabel}已检查。进度已保存在当前浏览器。`
     : state.status === 'reconfirm'
       ? `身高已改变，请重新确认${postureLabel}的身体接触点。`
       : posture === 'sitting'
         ? '按脚掌、手肘和视线，确认坐姿的三个关键位置。'
         : '按手肘和视线，确认站姿的两个关键位置。';
   startCalibrationButton.textContent = state.status === 'in-progress'
-    ? `继续${postureLabel}校准`
-    : state.status === 'complete'
-      ? `重新校准${postureLabel}`
-      : `开始${postureLabel}校准`;
+    ? `继续检查${postureLabel}`
+    : state.status === 'complete' || state.status === 'reconfirm'
+      ? `重新检查${postureLabel}`
+      : `开始检查${postureLabel}`;
 
   if (!calibrating) {
     calibrationPanel.hidden = true;
@@ -255,6 +205,7 @@ function renderCalibration() {
   calibrationProgress.textContent = `${calibration.step + 1} / ${steps.length}`;
   calibrationTitle.textContent = step.title;
   calibrationInstruction.textContent = step.instruction;
+  nextCalibrationButton.textContent = calibration.step === steps.length - 1 ? '完成检查' : '已调整，下一步';
   document.body.classList.add('is-calibrating');
   activeMetric = step.metric;
   activeResult = step.key;
@@ -265,7 +216,7 @@ function render() {
   heightRange.value = String(profile.height);
   renderCalibration();
   renderPostureControls();
-  const result = adjustedResult(calculateWorkstation(profile.height));
+  const result = calculateWorkstation(profile.height);
   renderResults(result);
   updateScene(result);
 }
@@ -287,14 +238,6 @@ function startCalibration() {
 
 function exitCalibration() {
   calibrating = null;
-  render();
-}
-
-function skipCurrentCalibration() {
-  if (!calibrating) return;
-  profile = skipCalibration(profile, calibrating);
-  calibrating = null;
-  saveProfile();
   render();
 }
 
@@ -330,17 +273,7 @@ document.querySelectorAll<HTMLButtonElement>('[data-posture]').forEach((button) 
 
 startCalibrationButton.addEventListener('click', startCalibration);
 required<HTMLButtonElement>('#exit-calibration').addEventListener('click', exitCalibration);
-required<HTMLButtonElement>('#skip-calibration').addEventListener('click', skipCurrentCalibration);
 required<HTMLButtonElement>('#next-calibration').addEventListener('click', nextCalibration);
-
-required<HTMLButtonElement>('#reset-profile').addEventListener('click', () => {
-  if (!window.confirm('清除坐姿与站姿的全部微调和校准进度？身高会保留。')) return;
-  const onboardingSeen = profile.onboardingSeen;
-  profile = { ...createFitProfile(profile.height), onboardingSeen };
-  calibrating = null;
-  saveProfile();
-  render();
-});
 
 required<HTMLButtonElement>('#replay-onboarding').addEventListener('click', onboarding.show);
 

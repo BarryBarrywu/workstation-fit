@@ -5,42 +5,47 @@ import {
   parseFitProfile,
   restartCalibration,
   setHeight,
-  setOffset,
-  skipCalibration,
-  type AdjustableResultKey,
 } from '../src/lib/fit-profile';
 
 describe('local fit profile', () => {
-  it.each([
-    ['seat', -8, -8],
-    ['sittingDesk', 0, 0],
-    ['standingMonitorTop', 8, 8],
-    ['standingDesk', 99, 8],
-    ['sittingMonitorTop', -99, -8],
-  ] as [AdjustableResultKey, number, number][])('stores %s offsets inside the calibration envelope', (key, input, expected) => {
-    const profile = setOffset(createFitProfile(), key, input);
-
-    expect(profile.offsets[key]).toBe(expected);
-  });
-
-  it('keeps sitting and standing calibration independent', () => {
-    let profile = createFitProfile();
-    profile = setOffset(profile, 'sittingDesk', 4);
-    profile = setOffset(profile, 'standingDesk', -3);
-
-    expect(profile.offsets.sittingDesk).toBe(4);
-    expect(profile.offsets.standingDesk).toBe(-3);
-  });
-
   it('restores valid local data and safely replaces damaged data', () => {
-    const saved = setOffset(createFitProfile(180), 'seat', 3);
+    const saved = createFitProfile(180);
 
     expect(parseFitProfile(JSON.stringify(saved))).toEqual(saved);
     expect(parseFitProfile('{broken')).toEqual(createFitProfile());
     expect(parseFitProfile(JSON.stringify({ version: 999 }))).toEqual(createFitProfile());
   });
 
-  it('only completes a posture after its final calibration step', () => {
+  it('migrates the previous profile without retaining numeric offsets', () => {
+    const legacy = {
+      version: 1,
+      height: 180,
+      offsets: {
+        seat: 8,
+        sittingDesk: -4,
+        standingDesk: 3,
+        sittingMonitorTop: 2,
+        standingMonitorTop: -1,
+      },
+      calibration: {
+        sitting: { step: 3, status: 'complete' },
+        standing: { step: 1, status: 'in-progress' },
+      },
+      onboardingSeen: true,
+    };
+
+    const profile = parseFitProfile(JSON.stringify(legacy));
+
+    expect(profile).toEqual({
+      version: 2,
+      height: 180,
+      calibration: legacy.calibration,
+      onboardingSeen: true,
+    });
+    expect(profile).not.toHaveProperty('offsets');
+  });
+
+  it('only completes a posture after its final physical check', () => {
     let profile = createFitProfile();
     profile = advanceCalibration(profile, 'sitting');
     profile = advanceCalibration(profile, 'sitting');
@@ -51,27 +56,21 @@ describe('local fit profile', () => {
     expect(profile.calibration.standing.status).toBe('not-started');
   });
 
-  it('preserves offsets but requests reconfirmation after height changes', () => {
-    let profile = setOffset(createFitProfile(173), 'seat', 2);
+  it('requests reconfirmation after height changes', () => {
+    let profile = createFitProfile(173);
     profile = advanceCalibration(advanceCalibration(advanceCalibration(profile, 'sitting'), 'sitting'), 'sitting');
 
     profile = setHeight(profile, 180);
 
-    expect(profile.offsets.seat).toBe(2);
     expect(profile.calibration.sitting.status).toBe('reconfirm');
     expect(profile.height).toBe(180);
   });
 
-  it('never stores a viewing-distance offset', () => {
-    expect(createFitProfile().offsets).not.toHaveProperty('monitorDistance');
-  });
-
-  it('lets a user skip the active posture calibration without affecting the other posture', () => {
-    let profile = restartCalibration(createFitProfile(), 'sitting');
-    profile = advanceCalibration(profile, 'sitting');
-    profile = skipCalibration(profile, 'sitting');
+  it('keeps sitting and standing physical checks independent', () => {
+    let profile = restartCalibration(createFitProfile(), 'standing');
+    profile = advanceCalibration(profile, 'standing');
 
     expect(profile.calibration.sitting).toEqual({ step: 0, status: 'not-started' });
-    expect(profile.calibration.standing).toEqual({ step: 0, status: 'not-started' });
+    expect(profile.calibration.standing).toEqual({ step: 1, status: 'in-progress' });
   });
 });

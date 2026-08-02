@@ -33,20 +33,16 @@ The authority assigned to a source in an evidence chain. Original anthropometric
 _Avoid_: Treating every link as equal evidence, using an undocumented calculator as numerical authority
 
 **Calibration**:
-A prominent but user-initiated, skippable guided flow in which the user checks observable contact points such as feet, elbows, and eye line, adjusts the corresponding fit estimates, and saves those offsets locally for later visits.
-_Avoid_: Onboarding, static instructions, diagnosis, treatment
-
-**Calibration offset**:
-A signed local adjustment that shifts an entire fit-estimate range up or down without turning that range into a single claimed optimum.
-_Avoid_: Exact target, absolute furniture height, new fit estimate
+A prominent but user-initiated guided checklist in which the user adjusts their real chair, desk, and monitor against observable contact points such as feet, elbows, and eye line. The website records checklist progress, not revised numeric recommendations.
+_Avoid_: Onboarding, numeric offset control, diagnosis, treatment
 
 **Posture calibration**:
-The locally saved set of calibration offsets and progress for one posture. Each adjustment is saved immediately, while completion is recorded only after every step for that posture is finished. Sitting calibration contains seat, desk, and monitor offsets; standing calibration contains separate desk and monitor offsets. Monitor distance remains an observation rather than a saved exact adjustment.
-_Avoid_: One shared sitting-and-standing offset, mandatory calibration
+The locally saved physical-check progress for one posture. Sitting checks cover the chair, desk, and monitor; standing checks cover the desk and monitor. Completion is recorded only after every step for that posture is finished.
+_Avoid_: Numeric offset, one shared sitting-and-standing state, mandatory input
 
 **Local fit profile**:
-The height and posture-calibration state saved only in the current browser, with an explicit reset action and no account or server record. Changing the saved height preserves existing offsets but marks each completed posture calibration for reconfirmation.
-_Avoid_: User account, cloud profile, anonymous tracking
+The height, onboarding state, and posture-check progress saved only in the current browser, with no account or server record. Changing the saved height marks each completed posture check for reconfirmation.
+_Avoid_: Numeric offsets, user account, cloud profile, anonymous tracking
 
 **Related episode entry**:
 One secondary editorial module after the complete evidence chains, containing a shared cover, title, summary, and multiple platform destinations for the related episode. It does not frame the independent calculator as sponsored; a destination without a published URL is visibly pending rather than linked to a placeholder.
@@ -101,7 +97,7 @@ An original, product-neutral office chair whose seat, back, lumbar support, armr
 _Avoid_: H300 replica, generic stool, pedestal chair
 
 **Fit envelope**:
-The complete `145–205 cm` input range plus permitted calibration offsets in which every adjustable assembly must remain connected and collision-free.
+The complete `145–205 cm` input range in which every adjustable assembly must remain connected and collision-free.
 _Avoid_: Recommended population, source-data range
 
 **Functional minimalism**:
