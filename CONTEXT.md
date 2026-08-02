@@ -16,6 +16,10 @@ _Avoid_: Diagnosis, treatment
 The GLB containing the robot's original meshes, materials, and named articulated hierarchy; it does not decide fitted poses.
 _Avoid_: Animated character, complete scene
 
+**Furniture rig asset**:
+The GLB containing the desk, monitor arm, and ergonomic chair as named adjustable assemblies; it provides their visual form but does not decide fitted measurements.
+_Avoid_: Procedural furniture, static furniture model
+
 **Fit pose**:
 A sitting or standing robot pose derived by the browser from the current body and workstation measurements.
 _Avoid_: GLB animation, fixed pose
@@ -40,12 +44,24 @@ _Avoid_: Scaled limb, stretched leg
 A set of rigid shells connected by translating, rotating, or telescoping parts so a fit pose can change without visual distortion.
 _Avoid_: Resizable object
 
+**Dual-column sit-stand desk**:
+An adjustable desk with two lateral telescoping columns whose clear space contains the person and chair throughout sitting and standing fit poses.
+_Avoid_: Four-leg table, two floating posts
+
+**Articulated monitor arm**:
+A desk-clamped two-link support whose pivots place the screen while its mounting head preserves the screen orientation.
+_Avoid_: Floating monitor, height-scaled stand
+
+**Ergonomic chair assembly**:
+An original, product-neutral office chair whose seat, back, lumbar support, armrests, gas lift, five-star base, and casters communicate adjustable seated support without reproducing a branded chair.
+_Avoid_: H300 replica, generic stool, pedestal chair
+
 **Fit envelope**:
 The complete `145–205 cm` input range plus permitted calibration offsets in which every adjustable assembly must remain connected and collision-free.
 _Avoid_: Recommended population, source-data range
 
 **Functional minimalism**:
-The robot's form language in which only joints and details needed to explain posture, adjustment, or identity remain visible; all unrelated mechanisms and decoration are simplified or covered by rounded shells.
+The scene's form language in which only joints and details needed to explain posture, adjustment, support, or identity remain visible; unrelated mechanisms and decoration are simplified or covered by quiet shells.
 _Avoid_: Decorative machinery, exposed complexity, featureless toy
 
 **Shell continuity**:

@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { MetricKey, Posture, WorkstationResult } from './ergonomics';
+import { createFurnitureRig } from './furniture-rig';
 
 type SceneState = {
   height: number;
@@ -96,15 +96,6 @@ export async function createWorkstationScene(stage: HTMLElement, canvas: HTMLCan
   rimLight.position.set(5, 5, -5);
   scene.add(rimLight);
 
-  const furnitureMaterial = new THREE.MeshStandardMaterial({ color: 0xb9c0bb, roughness: 0.72, metalness: 0.12 });
-  const furnitureDark = new THREE.MeshStandardMaterial({ color: 0x49514c, roughness: 0.6, metalness: 0.34 });
-  const screenMaterial = new THREE.MeshStandardMaterial({ color: 0x26302c, roughness: 0.42, metalness: 0.2 });
-  const deskSurfaceMaterial = furnitureMaterial.clone();
-  const deskFrameMaterial = furnitureDark.clone();
-  const chairSurfaceMaterial = furnitureMaterial.clone();
-  const chairFrameMaterial = furnitureDark.clone();
-  const monitorSurfaceMaterial = screenMaterial.clone();
-
   const stageMaterial = new THREE.MeshStandardMaterial({ color: 0xdde3df, roughness: 0.86, metalness: 0.04 });
   const plinth = new THREE.Mesh(new THREE.CylinderGeometry(3.15, 3.4, 0.28, 64), stageMaterial);
   plinth.position.y = -0.16;
@@ -119,63 +110,17 @@ export async function createWorkstationScene(stage: HTMLElement, canvas: HTMLCan
   ring.position.y = 0.005;
   scene.add(ring);
 
-  const desk = new THREE.Group();
-  const deskTop = new THREE.Mesh(new RoundedBoxGeometry(2.45, 0.13, 1.35, 4, 0.06), deskSurfaceMaterial);
-  deskTop.castShadow = true;
-  desk.add(deskTop);
-  const deskLegs = [-0.82, 0.82].map((x) => {
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.095, 1, 16), deskFrameMaterial);
-    leg.position.x = x;
-    leg.castShadow = true;
-    desk.add(leg);
-    return leg;
-  });
-  desk.position.x = 0.7;
-  scene.add(desk);
-
-  const monitor = new THREE.Group();
-  const display = new THREE.Mesh(new RoundedBoxGeometry(0.12, 0.74, 1.18, 5, 0.07), monitorSurfaceMaterial);
-  display.castShadow = true;
-  monitor.add(display);
-  const monitorGlow = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.02, 0.59),
-    new THREE.MeshBasicMaterial({ color: 0xa9beb2, transparent: true, opacity: 0.76 }),
-  );
-  monitorGlow.rotation.y = -Math.PI / 2;
-  monitorGlow.position.x = -0.063;
-  monitor.add(monitorGlow);
-  const monitorNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.045, 0.42, 12), furnitureDark);
-  monitorNeck.position.y = -0.55;
-  monitor.add(monitorNeck);
-  const monitorFoot = new THREE.Mesh(new RoundedBoxGeometry(0.44, 0.045, 0.42, 3, 0.02), furnitureDark);
-  monitorFoot.position.y = -0.77;
-  monitor.add(monitorFoot);
-  monitor.position.x = 1.05;
-  scene.add(monitor);
-
-  const chair = new THREE.Group();
-  const seat = new THREE.Mesh(new RoundedBoxGeometry(0.88, 0.14, 0.82, 5, 0.08), chairFrameMaterial);
-  seat.castShadow = true;
-  chair.add(seat);
-  const back = new THREE.Mesh(new RoundedBoxGeometry(0.16, 1.25, 0.82, 5, 0.08), chairSurfaceMaterial);
-  back.position.set(-0.39, 0.62, 0);
-  back.rotation.z = -0.12;
-  back.castShadow = true;
-  chair.add(back);
-  const column = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 1, 16), chairFrameMaterial);
-  chair.add(column);
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.1, 0.08, 5), chairFrameMaterial);
-  base.position.y = -0.56;
-  chair.add(base);
-  chair.position.x = -0.72;
-  scene.add(chair);
-
   const robot = new THREE.Group();
   robot.rotation.y = Math.PI / 2;
   scene.add(robot);
 
-  const gltf = await new GLTFLoader().loadAsync('/models/workstation-guide.glb');
-  const robotModel = gltf.scene;
+  const loader = new GLTFLoader();
+  const [robotGltf, furnitureRig] = await Promise.all([
+    loader.loadAsync('/models/workstation-guide.glb'),
+    createFurnitureRig(loader, CM * 100, amber),
+  ]);
+  scene.add(furnitureRig.object);
+  const robotModel = robotGltf.scene;
   robotModel.traverse((object) => {
     if (!(object instanceof THREE.Mesh)) return;
     object.castShadow = true;
@@ -195,6 +140,7 @@ export async function createWorkstationScene(stage: HTMLElement, canvas: HTMLCan
     if (!node) throw new Error(`Missing robot node: ${name}`);
     return node;
   };
+
   const poseNodes = {
     hips: [requiredNode('Hip_L'), requiredNode('Hip_R')],
     knees: [requiredNode('Knee_L'), requiredNode('Knee_R')],
@@ -231,15 +177,7 @@ export async function createWorkstationScene(stage: HTMLElement, canvas: HTMLCan
         material.opacity = emphasized ? 0.95 : 0.2;
       }
     }
-    const setHighlight = (materials: THREE.MeshStandardMaterial[], emphasized: boolean) => {
-      materials.forEach((material) => {
-        material.emissive.setHex(emphasized ? amber : 0x000000);
-        material.emissiveIntensity = emphasized ? 0.16 : 0;
-      });
-    };
-    setHighlight([chairSurfaceMaterial, chairFrameMaterial], state.activeMetric === 'seat');
-    setHighlight([deskSurfaceMaterial, deskFrameMaterial], state.activeMetric === 'desk');
-    setHighlight([monitorSurfaceMaterial], state.activeMetric === 'monitor');
+    furnitureRig.setActiveMetric(state.activeMetric);
   }
 
   function updateRobot(humanHeight: number) {
@@ -299,22 +237,12 @@ export async function createWorkstationScene(stage: HTMLElement, canvas: HTMLCan
   }
 
   function updateFurniture() {
-    deskTop.position.y = deskHeight;
-    deskLegs.forEach((leg) => {
-      leg.scale.y = deskHeight - 0.05;
-      leg.position.y = (deskHeight - 0.05) / 2;
-    });
-    monitor.position.y = monitorTop - 0.37;
-    chair.position.y = seatHeight;
-    chair.position.x = lerp(-0.72, -1.85, postureMix);
-    chair.rotation.y = lerp(0, -0.34, postureMix);
-    column.scale.y = Math.max(0.35, seatHeight - 0.3);
-    column.position.y = -(seatHeight - 0.3) / 2 - 0.1;
+    furnitureRig.update({ deskHeight, seatHeight, monitorTop, postureMix });
   }
 
   function updateMeasurements(state: SceneState) {
     const cap = 0.11;
-    const seatX = chair.position.x - 0.72;
+    const seatX = furnitureRig.seatMeasurementX(postureMix);
     const deskX = 2.12;
     const monitorX = 1.62;
     const measurements: Record<MetricKey, { start: THREE.Vector3; end: THREE.Vector3; text: string }> = {
@@ -372,7 +300,8 @@ export async function createWorkstationScene(stage: HTMLElement, canvas: HTMLCan
     const { width, height } = stage.getBoundingClientRect();
     renderer.setSize(width, height, false);
     camera.aspect = width / Math.max(height, 1);
-    camera.fov = width < 600 ? 38 : 34;
+    camera.fov = width < 600 ? 50 : 34;
+    controls.target.x = width < 600 ? 0.65 : 0;
     camera.updateProjectionMatrix();
   };
   const resizeObserver = new ResizeObserver(resize);
