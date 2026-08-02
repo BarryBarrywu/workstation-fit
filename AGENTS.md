@@ -17,5 +17,19 @@
 
 - Prefer small modules and browser-native APIs.
 - Preserve keyboard access, reduced-motion behavior, and a non-WebGL fallback.
-- Do not add a backend, account system, cookies, or measurement persistence.
+- Do not add a backend, account system, cookies, or remote measurement persistence. The height, onboarding state, and Local fit profile may persist in browser storage and must never leave the device.
 - Do not commit, push, deploy, or create a remote repository without explicit approval.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs live in this repository's GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the five canonical triage labels documented in `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This is a single-context repository using the root `CONTEXT.md` and `docs/adr/`. See `docs/agents/domain.md`.

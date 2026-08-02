@@ -1,5 +1,14 @@
 ---
 import '../styles/global.css';
+import { evidenceChains } from '../lib/ergonomics';
+
+const chains = Object.values(evidenceChains);
+const classLabels = {
+  'national-standard': '国家标准',
+  'occupational-health': '职业健康指南',
+  'professional-guidance': '专业校准指南',
+  research: '研究说明',
+};
 ---
 
 <!doctype html>
@@ -7,82 +16,171 @@ import '../styles/global.css';
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta
-      name="description"
-      content="输入身高，获得椅子、坐站桌和显示器的工位设置起始范围。所有计算都在浏览器本地完成。"
-    />
+    <meta name="description" content="输入身高，获得有来源依据的椅子、坐站桌和显示器设置起始范围。所有个人数据都留在浏览器。" />
     <title>合身工位｜找到更适合你的桌椅高度</title>
   </head>
   <body>
     <header class="site-header">
-      <a class="wordmark" href="/" aria-label="合身工位首页">
+      <a class="wordmark" href="#calculator" aria-label="合身工位首页">
         <span class="wordmark-mark" aria-hidden="true"></span>
         <span>合身工位</span>
       </a>
-      <span class="header-note">开源 · 数据留在本机</span>
+      <nav class="header-actions" aria-label="工具操作">
+        <button id="replay-onboarding" type="button">使用说明</button>
+        <button id="reset-profile" type="button">重置校准</button>
+        <span class="header-note">开源 · 数据留在本机</span>
+      </nav>
     </header>
 
-    <main class="calculator-shell">
-      <section class="control-panel" aria-labelledby="page-title">
-        <div class="intro">
-          <p class="eyebrow">WORKSTATION FIT</p>
-          <h1 id="page-title">让工位，<br />先合身。</h1>
-          <p class="lede">从身高得到一个可信的起点，再用身体感受完成最后几厘米。</p>
-        </div>
+    <main>
+      <section id="calculator" class="calculator-shell" aria-labelledby="page-title">
+        <div class="control-panel">
+          <div class="intro">
+            <p class="eyebrow">WORKSTATION FIT</p>
+            <h1 id="page-title">让工位，<br />先合身。</h1>
+            <p class="lede">从身高得到一个可追溯的起点，再用身体感受完成最后几厘米。</p>
+          </div>
 
-        <div class="height-control">
-          <div class="control-heading">
-            <label for="height-number">你的身高</label>
-            <div class="number-field">
-              <input id="height-number" type="number" min="145" max="205" value="173" inputmode="numeric" />
-              <span>cm</span>
+          <aside class="calibration-callout" aria-labelledby="calibration-callout-title">
+            <div>
+              <p class="section-label">建议下一步</p>
+              <h2 id="calibration-callout-title">30 秒身体校准</h2>
+              <p id="calibration-summary">按脚掌、手肘和视线，确认坐姿的三个关键位置。</p>
+            </div>
+            <button id="start-calibration" class="primary-button" type="button">开始坐姿校准</button>
+          </aside>
+
+          <div class="height-control" data-onboarding-target="height">
+            <div class="control-heading">
+              <label for="height-number">你的身高</label>
+              <div class="number-field">
+                <input id="height-number" type="number" min="145" max="205" value="173" inputmode="numeric" />
+                <span>cm</span>
+              </div>
+            </div>
+            <input id="height-range" class="height-range" type="range" min="145" max="205" value="173" aria-label="身高，厘米" />
+            <div class="range-ends" aria-hidden="true"><span>145</span><span>205</span></div>
+          </div>
+
+          <fieldset class="posture-switch" data-onboarding-target="posture">
+            <legend class="sr-only">选择工作姿态</legend>
+            <button class="posture-button is-active" type="button" data-posture="sitting" aria-pressed="true">坐着</button>
+            <button class="posture-button" type="button" data-posture="standing" aria-pressed="false">站着</button>
+            <span class="posture-indicator" aria-hidden="true"></span>
+          </fieldset>
+
+          <div id="calibration-panel" class="calibration-panel" hidden>
+            <div>
+              <p class="section-label">身体校准 <span id="calibration-progress"></span></p>
+              <h2 id="calibration-title"></h2>
+              <p id="calibration-instruction"></p>
+            </div>
+            <div class="calibration-actions">
+              <button id="exit-calibration" type="button">稍后继续</button>
+              <button id="next-calibration" class="primary-button" type="button">这一步好了</button>
             </div>
           </div>
-          <input id="height-range" class="height-range" type="range" min="145" max="205" value="173" aria-label="身高，厘米" />
-          <div class="range-ends" aria-hidden="true"><span>145</span><span>205</span></div>
-        </div>
 
-        <fieldset class="posture-switch">
-          <legend class="sr-only">选择工作姿态</legend>
-          <button class="posture-button is-active" type="button" data-posture="sitting" aria-pressed="true">坐着</button>
-          <button class="posture-button" type="button" data-posture="standing" aria-pressed="false">站着</button>
-          <span class="posture-indicator" aria-hidden="true"></span>
-        </fieldset>
-
-        <div class="result-heading">
-          <div>
-            <p class="section-label">起始范围</p>
-            <p id="confidence-note">适用于来源数据覆盖的身高范围</p>
+          <div class="result-heading">
+            <div>
+              <p class="section-label">起始范围</p>
+              <p id="confidence-note">每一项都单独标示来源覆盖状态</p>
+            </div>
+            <span id="posture-caption">坐姿</span>
           </div>
-          <span id="posture-caption">坐姿</span>
+
+          <div id="results" class="results" aria-live="polite"></div>
         </div>
 
-        <div id="results" class="results" aria-live="polite"></div>
-
-        <details class="calibration-note">
-          <summary>30 秒身体校准</summary>
-          <ol>
-            <li>脚掌完全着地，椅面略低于膝盖。</li>
-            <li>肩膀放松，键盘接近自然垂下的手肘。</li>
-            <li>屏幕顶部不高于眼睛，距离大约一臂。</li>
-          </ol>
-        </details>
+        <div id="stage" class="stage" data-onboarding-target="scene" aria-label="可旋转的工位设置三维示意图">
+          <canvas id="workstation-canvas"></canvas>
+          <p class="stage-fallback" hidden>当前设备无法显示 3D 场景，数值计算与身体校准仍可正常使用。</p>
+        </div>
       </section>
 
-      <section id="stage" class="stage" aria-label="可旋转的工位设置三维示意图">
-        <canvas id="workstation-canvas"></canvas>
-        <div class="stage-topline">
-          <span class="live-dot"><i></i> 实时联动</span>
-          <span class="drag-hint">拖动旋转 · 滚轮缩放</span>
+      <section id="credibility" class="content-section credibility" aria-labelledby="credibility-title">
+        <div>
+          <p class="eyebrow">WHY TRUST THE RANGE</p>
+          <h2 id="credibility-title">不是答案，是有出处的起点。</h2>
         </div>
-        <p class="stage-fallback" hidden>当前设备无法显示 3D 场景，计算结果仍可正常使用。</p>
+        <div class="credibility-grid">
+          <p><strong>中国成人数据</strong><span>人体尺寸优先采用现行国家标准，覆盖外明确标为趋势估算。</span></p>
+          <p><strong>逐项证据</strong><span>椅面、桌面、屏幕和距离都有独立来源与换算说明。</span></p>
+          <p><strong>身体最终确认</strong><span>身高无法代表腿、躯干和手臂比例，所以保留本地校准。</span></p>
+        </div>
+        <a class="text-link" href="#evidence">查看完整证据链</a>
+      </section>
+
+      <section id="evidence" class="content-section evidence-section" aria-labelledby="evidence-title">
+        <div class="section-intro">
+          <p class="eyebrow">EVIDENCE CHAINS</p>
+          <h2 id="evidence-title">每一个值，怎么来的。</h2>
+          <p>原始资料与项目换算分开写。品牌计算器和开源项目没有被用作数值权威。</p>
+        </div>
+        <div class="evidence-list">
+          {chains.map((chain, index) => (
+            <article id={`evidence-${chain.id}`} class="evidence-card" tabindex="-1">
+              <header>
+                <span class="evidence-number">{String(index + 1).padStart(2, '0')}</span>
+                <div>
+                  <h3>{chain.label}</h3>
+                  <p>{chain.summary}</p>
+                </div>
+              </header>
+              <dl>
+                <div><dt>适用人群</dt><dd>{chain.population}</dd></div>
+                <div><dt>来源覆盖</dt><dd>{chain.sourceCoverage ? `${chain.sourceCoverage.minHeight}–${chain.sourceCoverage.maxHeight} cm` : '与身高无关的通用指南'}</dd></div>
+                <div><dt>采用数据</dt><dd>{chain.adoptedData}</dd></div>
+                <div><dt>项目换算</dt><dd>{chain.transformation}</dd></div>
+                <div><dt>局限</dt><dd>{chain.limitations}</dd></div>
+              </dl>
+              <div class="source-links" aria-label={`${chain.label}原始资料`}>
+                {chain.sources.map((source) => (
+                  <a href={source.url} target="_blank" rel="noreferrer">
+                    <span>{classLabels[source.evidenceClass]}</span>
+                    <strong>{source.organization}</strong>
+                    <small>{source.title}</small>
+                  </a>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="episode" class="content-section episode-section" aria-labelledby="episode-title">
+        <div class="episode-copy">
+          <p class="eyebrow">RELATED EPISODE</p>
+          <h2 id="episode-title">从数字，到一套真实工位。</h2>
+          <p>相关视频会讲解如何把起始范围落实到桌子、椅子与显示器。发布后可从下面的平台继续观看。</p>
+          <div class="platform-links" aria-label="视频发布平台">
+            <span>B站 <small>待发布</small></span>
+            <span>YouTube <small>待发布</small></span>
+            <span>微信公众号 <small>待发布</small></span>
+            <span>抖音 <small>待发布</small></span>
+          </div>
+        </div>
+        <div class="episode-placeholder" role="img" aria-label="视频封面预留区域，十六比九">
+          <div class="safe-area"><span>16:9 封面预留</span><small>中央 4:3 安全区域</small></div>
+        </div>
+      </section>
+
+      <section id="independent-footer" class="independent-footer" aria-label="独立工具说明">
+        <p>合身工位由 Barry 独立设计并开源。个人数据只保存在当前浏览器，不会上传。</p>
+        <p>结果用于工位设置起点，不替代专业人体工学评估或医疗建议。</p>
       </section>
     </main>
 
-    <footer class="site-footer">
-      <p>合身工位由 Barry 独立设计并开源，感谢西昊 Sihoo 对本期内容的支持。</p>
-      <p>结果仅作为设置起点，不替代专业的人体工学评估。</p>
-    </footer>
+    <dialog id="onboarding-dialog" class="onboarding-dialog" aria-labelledby="onboarding-title">
+      <p class="eyebrow">快速使用说明</p>
+      <h2 id="onboarding-title"></h2>
+      <p id="onboarding-copy"></p>
+      <div class="onboarding-actions">
+        <button id="skip-onboarding" type="button">跳过</button>
+        <span id="onboarding-progress"></span>
+        <button id="next-onboarding" class="primary-button" type="button">下一步</button>
+      </div>
+    </dialog>
 
     <script src="../scripts/calculator.ts"></script>
   </body>

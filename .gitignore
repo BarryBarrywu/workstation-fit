@@ -1,5 +1,7 @@
 node_modules/
 dist/
 .astro/
+test-results/
+playwright-report/
 .DS_Store
 *.blend1

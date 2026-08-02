@@ -6,14 +6,18 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "test": "vitest run",
+    "test:browser": "playwright test"
   },
   "dependencies": {
     "astro": "7.1.6",
     "three": "0.185.1"
   },
   "devDependencies": {
+    "@playwright/test": "1.62.1",
     "@types/three": "0.185.3",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "vitest": "3.2.7"
   }
 }

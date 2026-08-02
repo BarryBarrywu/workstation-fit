@@ -4,13 +4,57 @@ Workstation Fit turns a person's measurements into adjustable workstation starti
 
 ## Language
 
+**Target population**:
+Chinese adult office users using the tool as a workstation setup starting point. Chinese anthropometric data is preferred; evidence from other populations must name that limitation. Children, wheelchair users, and people requiring clinical or individualized assessment are outside the default model.
+_Avoid_: Universal human model, medical population, silently mixing populations
+
+**Height-only model**:
+The V1 body input model uses height alone to create broad fit estimates, then relies on posture calibration for individual differences in leg, torso, arm, and eye proportions. Sex and additional body measurements are not required inputs.
+_Avoid_: Claiming personal precision from height, mandatory body survey
+
 **Fit estimate**:
 A height-derived starting range for a workstation measurement that must be confirmed against the person's body.
 _Avoid_: Ideal height, perfect height, medical recommendation
 
+**Monitor-top height**:
+The floor-to-screen-top fit estimate used to compare the display with the user's natural eye line. Screen-bottom height is not a product metric because it depends on the physical display size.
+_Avoid_: Screen-bottom height, monitor stand height, exact eye height
+
+**Evidence chain**:
+The traceable connection from one fit estimate to its original sources, the project's calculation or transformation, the source coverage, and the remaining limitations. Every displayed measurement must have its own evidence chain.
+_Avoid_: General bibliography, related reading presented as direct support
+
+**Evidence status**:
+The visible distinction between a fit estimate inside its sources' stated coverage and a trend estimate outside that coverage. Trend estimates remain available across the fit envelope but must disclose their source boundary and direct the user into calibration.
+_Avoid_: Confidence score, hiding extrapolation, presenting extrapolation as direct source data
+
+**Evidence class**:
+The authority assigned to a source in an evidence chain. Original anthropometric data, formal standards, and government or occupational-health publications can support measurements; university and professional guidance can support calibration rules; brand tools and GitHub projects are corroboration or implementation references unless they disclose a stronger underlying source.
+_Avoid_: Treating every link as equal evidence, using an undocumented calculator as numerical authority
+
 **Calibration**:
-A user correction to a fit estimate based on observable contact points such as feet, elbows, knees, and eye line.
-_Avoid_: Diagnosis, treatment
+A prominent but user-initiated, skippable guided flow in which the user checks observable contact points such as feet, elbows, and eye line, adjusts the corresponding fit estimates, and saves those offsets locally for later visits.
+_Avoid_: Onboarding, static instructions, diagnosis, treatment
+
+**Calibration offset**:
+A signed local adjustment that shifts an entire fit-estimate range up or down without turning that range into a single claimed optimum.
+_Avoid_: Exact target, absolute furniture height, new fit estimate
+
+**Posture calibration**:
+The locally saved set of calibration offsets and progress for one posture. Each adjustment is saved immediately, while completion is recorded only after every step for that posture is finished. Sitting calibration contains seat, desk, and monitor offsets; standing calibration contains separate desk and monitor offsets. Monitor distance remains an observation rather than a saved exact adjustment.
+_Avoid_: One shared sitting-and-standing offset, mandatory calibration
+
+**Local fit profile**:
+The height and posture-calibration state saved only in the current browser, with an explicit reset action and no account or server record. Changing the saved height preserves existing offsets but marks each completed posture calibration for reconfirmation.
+_Avoid_: User account, cloud profile, anonymous tracking
+
+**Related episode entry**:
+One secondary editorial module after the complete evidence chains, containing a shared cover, title, summary, and multiple platform destinations for the related episode. It does not frame the independent calculator as sponsored; a destination without a published URL is visibly pending rather than linked to a placeholder.
+_Avoid_: Primary call to action, four duplicate episode cards, empty link, sponsor branding in the calculator
+
+**Onboarding**:
+A skippable, replayable first-visit interface tour that teaches height input, posture switching, and 3D scene controls without blocking calculator use or changing and saving fit estimates.
+_Avoid_: Calibration, required setup
 
 **Visual rig asset**:
 The GLB containing the robot's original meshes, materials, and named articulated hierarchy; it does not decide fitted poses.
