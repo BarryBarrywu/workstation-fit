@@ -88,6 +88,12 @@ def z_bounds(name):
     return min(point.z for point in points), max(point.z for point in points)
 
 
+def y_bounds(name):
+    obj = objects[name]
+    points = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
+    return min(point.y for point in points), max(point.y for point in points)
+
+
 errors = []
 if missing:
     errors.append("required node names are missing")
@@ -96,12 +102,18 @@ else:
     column_spacing = abs(world_location("DeskColumnOuter_L").x - world_location("DeskColumnOuter_R").x)
     screen_size = dimensions("MonitorScreen")
     caster_bottoms = [z_bounds(f"ChairCaster_{index}")[0] for index in range(1, 6)]
+    panel_front = y_bounds("MonitorPanel")[1]
+    hardware_front = max(y_bounds("MonitorPivotHead")[1], y_bounds("MonitorVesaMount")[1])
+    monitor_front_clearance = panel_front - hardware_front
+    panel_color = objects["MonitorPanel"].active_material.diffuse_color[:3]
 
     print(f"desk_width_cm={desk_size.x * 100:.1f}")
     print(f"desk_depth_cm={desk_size.y * 100:.1f}")
     print(f"desk_column_spacing_cm={column_spacing * 100:.1f}")
     print(f"screen_width_cm={screen_size.x * 100:.1f}")
     print(f"screen_height_cm={screen_size.z * 100:.1f}")
+    print(f"monitor_front_clearance_mm={monitor_front_clearance * 1000:.1f}")
+    print(f"monitor_panel_rgb={','.join(f'{value:.3f}' for value in panel_color)}")
     print(f"caster_bottom_height_mm={max(caster_bottoms) * 1000:.1f}")
 
     if not 1.18 <= desk_size.x <= 1.22:
@@ -112,6 +124,10 @@ else:
         errors.append("desk columns are not spaced 96 cm apart")
     if not 0.59 <= screen_size.x <= 0.63 or not 0.34 <= screen_size.z <= 0.38:
         errors.append("monitor is not approximately 27-inch 16:9")
+    if monitor_front_clearance < 0.02:
+        errors.append("monitor rear hardware protrudes through the front panel")
+    if max(panel_color) > 0.005:
+        errors.append("monitor panel is not pure black")
     if any(abs(height) > 0.005 for height in caster_bottoms):
         errors.append("chair casters are not grounded")
 
@@ -130,7 +146,7 @@ else:
         middle_upper_overlap = middle_center + 0.24 - (upper_center - 0.24)
         upper_crossbar_overlap = upper_center + 0.24 - (desk_surface - 0.045)
         monitor_base = Vector((0.20, desk_surface + 0.06, 0.285))
-        monitor_head = Vector((0, screen_top - 0.18, 0.16))
+        monitor_head = Vector((0, screen_top - 0.18, 0.23))
         monitor_reach = (monitor_head - monitor_base).length
         chair_upper = seat_surface - 0.0425
         gas_top = max(0.2175, chair_upper - 0.055)

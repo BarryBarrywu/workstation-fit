@@ -124,18 +124,19 @@ export async function createFurnitureRig(loader: GLTFLoader, sceneMeters: number
     nodes.deskUpper.forEach((column) => { column.position.y = upperColumnCenter; });
 
     const basePoint = new THREE.Vector3(0.20, deskSurface + 0.06, 0.285);
-    const headPoint = new THREE.Vector3(0, screenTop - 0.18, 0.16);
-    const elbowPoint = solveTwoLink(basePoint, headPoint, MONITOR_ARM_LENGTH);
+    const screenPoint = new THREE.Vector3(0, screenTop - 0.18, 0.16);
+    const mountPoint = screenPoint.clone().add(new THREE.Vector3(0, 0, 0.07));
+    const elbowPoint = solveTwoLink(basePoint, mountPoint, MONITOR_ARM_LENGTH);
     nodes.monitorClamp.position.y = deskSurface - 0.01;
     nodes.monitorClampJaw.position.y = deskSurface - 0.105;
     placeRigidLink(nodes.monitorLowerArm, basePoint, elbowPoint);
-    placeRigidLink(nodes.monitorUpperArm, elbowPoint, headPoint);
+    placeRigidLink(nodes.monitorUpperArm, elbowPoint, mountPoint);
     nodes.monitorPivots[0].position.copy(basePoint);
     nodes.monitorPivots[1].position.copy(elbowPoint);
-    nodes.monitorPivots[2].position.copy(headPoint);
-    nodes.monitorScreen.position.set(0, headPoint.y, headPoint.z);
-    nodes.monitorPanel.position.set(0, headPoint.y, headPoint.z - 0.025);
-    nodes.monitorVesa.position.set(0, headPoint.y, headPoint.z + 0.042);
+    nodes.monitorPivots[2].position.copy(mountPoint);
+    nodes.monitorScreen.position.copy(screenPoint);
+    nodes.monitorPanel.position.set(0, screenPoint.y, screenPoint.z - 0.025);
+    nodes.monitorVesa.position.set(0, screenPoint.y, screenPoint.z + 0.042);
 
     nodes.chair.position.x = lerp(0, -0.22, state.postureMix);
     nodes.chair.position.z = lerp(-0.288, -0.58, state.postureMix);
