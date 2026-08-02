@@ -1,6 +1,5 @@
 import {
   calculateWorkstation,
-  evidenceChains,
   roundRange,
   type EvidenceKey,
   type MetricKey,
@@ -116,21 +115,6 @@ function offsetCopy(offset: number) {
   return `${offset > 0 ? '高' : '低'} ${Math.abs(offset)} cm`;
 }
 
-function statusCopy(status: 'reference' | 'trend' | 'guidance') {
-  if (status === 'trend') return '趋势估算';
-  if (status === 'guidance') return '通用指南';
-  return '来源覆盖';
-}
-
-function evidenceBoundaryCopy(definition: CardDefinition, status: 'reference' | 'trend' | 'guidance') {
-  const coverage = evidenceChains[definition.evidence].sourceCoverage;
-  if (status === 'guidance') return '来自通用专业指南，不按身高推算。';
-  if (status === 'trend' && coverage) {
-    return `已超出 ${coverage.minHeight}–${coverage.maxHeight} cm 来源节点，当前为项目趋势估算；建议完成身体校准。`;
-  }
-  return coverage ? `当前身高位于 ${coverage.minHeight}–${coverage.maxHeight} cm 来源节点覆盖内。` : '';
-}
-
 function updateScene(result: WorkstationResult) {
   sceneController?.update({ height: profile.height, posture, activeMetric, result });
 }
@@ -190,9 +174,8 @@ function renderResults(result: WorkstationResult) {
           <p>${definition.hint}</p>
         </div>
         <div class="result-meta">
-          <span class="evidence-status is-${status}">${statusCopy(status)}</span>
+          ${status === 'trend' ? '<span class="evidence-status is-trend">趋势估算</span>' : ''}
           <a class="source-footnote" href="#evidence-${definition.evidence}" aria-label="${definition.label}来源">来源 ↘</a>
-          <small class="evidence-boundary">${evidenceBoundaryCopy(definition, status)}</small>
         </div>
       </div>
       ${definition.adjustable ? `

@@ -3,14 +3,14 @@ import { expect, test } from '@playwright/test';
 test('presents the independent calculator before evidence and related content', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('workstation-fit:onboarding-seen', 'true'));
   await page.goto('/');
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
 
   const sections = page.locator('main > section');
-  await expect(sections).toHaveCount(5);
+  await expect(sections).toHaveCount(4);
   await expect(sections.nth(0)).toHaveAttribute('id', 'calculator');
-  await expect(sections.nth(1)).toHaveAttribute('id', 'credibility');
-  await expect(sections.nth(2)).toHaveAttribute('id', 'evidence');
-  await expect(sections.nth(3)).toHaveAttribute('id', 'episode');
-  await expect(sections.nth(4)).toHaveAttribute('id', 'independent-footer');
+  await expect(sections.nth(1)).toHaveAttribute('id', 'evidence');
+  await expect(sections.nth(2)).toHaveAttribute('id', 'episode');
+  await expect(sections.nth(3)).toHaveAttribute('id', 'independent-footer');
 
   await expect(page.getByText('西昊', { exact: false })).toHaveCount(0);
   await expect(page.getByText('实时联动', { exact: false })).toHaveCount(0);
@@ -18,6 +18,11 @@ test('presents the independent calculator before evidence and related content', 
   await expect(page.getByRole('link', { name: /椅面高度来源/ })).toHaveAttribute('href', '#evidence-seat');
   await expect(page.locator('#episode').getByText('待发布', { exact: true })).toHaveCount(4);
   await expect(page.locator('#episode').getByRole('link')).toHaveCount(0);
+
+  await page.getByRole('link', { name: /屏幕顶部来源/ }).click();
+  await expect(page.locator('#evidence-sittingMonitorTop')).toBeVisible();
+  await expect(page.locator('#evidence-tab-sittingMonitorTop')).toHaveAttribute('aria-selected', 'true');
+  await expect(page).toHaveURL(/#evidence-sittingMonitorTop$/);
 });
 
 test('persists slider offsets locally and keeps sitting and standing separate', async ({ page }) => {

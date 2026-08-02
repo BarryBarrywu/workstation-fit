@@ -58,7 +58,7 @@ export async function createWorkstationScene(stage: HTMLElement, canvas: HTMLCan
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog(0xeef2f0, 9, 15);
 
-  const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 40);
+  const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 40);
   camera.position.set(7.1, 4.7, 8.2);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -81,7 +81,7 @@ export async function createWorkstationScene(stage: HTMLElement, canvas: HTMLCan
   controls.enableDamping = true;
   controls.enablePan = false;
   controls.minDistance = 7;
-  controls.maxDistance = 12;
+  controls.maxDistance = 13;
   controls.minPolarAngle = 0.68;
   controls.maxPolarAngle = 1.48;
   controls.target.set(0, 2.05, 0);
@@ -300,7 +300,7 @@ export async function createWorkstationScene(stage: HTMLElement, canvas: HTMLCan
     const { width, height } = stage.getBoundingClientRect();
     renderer.setSize(width, height, false);
     camera.aspect = width / Math.max(height, 1);
-    camera.fov = width < 600 ? 50 : 34;
+    camera.fov = width < 600 ? 50 : 40;
     controls.target.x = width < 600 ? 0.65 : 0;
     camera.updateProjectionMatrix();
   };
