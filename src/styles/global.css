@@ -244,7 +244,7 @@ h1 { max-width: 420px; margin: 0; font-size: clamp(54px, 5.2vw, 78px); line-heig
 .brand-icon-xiaohongshu { color: #ff2442; }
 .brand-icon-tutti { color: var(--graphite); }
 .platform-links > :last-child:nth-child(odd) { grid-column: 1 / -1; }
-.platform-links > .product-link-placeholder { border-style: dashed; background: rgba(249, 251, 250, 0.2); }
+.platform-links > .product-link-placeholder.is-pending { border-style: dashed; background: rgba(249, 251, 250, 0.2); }
 .product-placeholder-mark { width: 24px; height: 24px; border: 1px solid rgba(32, 37, 34, 0.2); border-radius: 7px; position: relative; }
 .product-placeholder-mark::before, .product-placeholder-mark::after { content: ""; width: 7px; height: 1px; background: rgba(32, 37, 34, 0.3); position: absolute; top: 11px; }
 .product-placeholder-mark::before { left: 5px; transform: rotate(-45deg); }

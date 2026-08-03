@@ -20,7 +20,8 @@ test('presents the independent calculator before evidence and related content', 
   await expect(page.getByText('滚轮缩放', { exact: false })).toHaveCount(0);
   await expect(page.getByRole('link', { name: /椅面高度来源/ })).toHaveAttribute('href', '#evidence-seat');
   await expect(page.locator('#episode').getByText('待发布', { exact: true })).toHaveCount(5);
-  await expect(page.locator('#episode .brand-icon')).toHaveCount(5);
+  await expect(page.locator('#episode .brand-icon')).toHaveCount(6);
+  await expect(page.locator('#episode .platform-links')).toHaveAttribute('aria-label', '视频发布平台与本期商品链接');
   await expect(page.locator('#episode .platform-links > span').filter({ hasText: '小红书' })).toBeVisible();
   await expect(page.locator('#episode .platform-links > span')).toHaveCount(6);
   const productLinkPlaceholder = page.locator('#episode .platform-links > span').filter({ hasText: '本期商品链接' });

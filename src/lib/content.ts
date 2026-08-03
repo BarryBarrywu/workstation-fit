@@ -1,9 +1,12 @@
-export type BrandIconName = 'bilibili' | 'youtube' | 'wechat' | 'douyin' | 'xiaohongshu' | 'github' | 'tutti';
+export type BrandIconName = 'bilibili' | 'youtube' | 'wechat' | 'douyin' | 'xiaohongshu' | 'placeholder' | 'github' | 'tutti';
 
 export type EpisodeDestination = {
   label: string;
   icon: BrandIconName;
   url: string | null;
+  pendingLabel?: string;
+  actionLabel?: string;
+  kind?: 'product';
 };
 
 export type RelatedLink = {
@@ -25,6 +28,14 @@ export const relatedEpisode = {
     { label: '微信公众号', icon: 'wechat', url: null },
     { label: '抖音', icon: 'douyin', url: null },
     { label: '小红书', icon: 'xiaohongshu', url: null },
+    {
+      label: '本期商品链接',
+      icon: 'placeholder',
+      url: null,
+      pendingLabel: '待补充',
+      actionLabel: '查看',
+      kind: 'product',
+    },
   ] satisfies EpisodeDestination[],
 };
 
