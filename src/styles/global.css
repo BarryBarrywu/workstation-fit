@@ -61,8 +61,33 @@ a { color: inherit; }
 .control-panel { padding: clamp(44px, 6vh, 76px) 0 64px; position: relative; z-index: 3; }
 .eyebrow, .section-label { margin: 0 0 14px; color: var(--metal); font-family: "DIN Alternate", "Arial Narrow", sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; }
 h1 { max-width: 420px; margin: 0; font-size: clamp(54px, 5.2vw, 78px); line-height: 0.98; letter-spacing: -0.075em; font-weight: 650; }
+.typewriter-line {
+  width: 4.1em;
+  display: inline-block;
+  overflow: hidden;
+  border-right: 0.07em solid transparent;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+.hero-subtitle { max-width: 360px; margin: 20px 0 0; color: rgba(32, 37, 34, 0.58); font-size: 14px; line-height: 1.75; text-wrap: pretty; }
+
+@keyframes typewriter-reveal {
+  to { width: 4.1em; }
+}
+
+@keyframes typewriter-caret {
+  50% { border-color: var(--amber); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .typewriter-line {
+    width: 0;
+    animation: typewriter-reveal 760ms steps(4, end) 180ms forwards, typewriter-caret 520ms step-end 180ms 4;
+  }
+}
+
 .calibration-callout {
-  margin-top: 34px;
+  margin-top: 28px;
   padding: 20px;
   border: 1px solid rgba(32, 37, 34, 0.1);
   border-radius: 18px;
