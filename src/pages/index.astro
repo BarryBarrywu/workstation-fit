@@ -5,6 +5,7 @@ import { relatedEpisode } from '../lib/content';
 
 const chains = Object.values(evidenceChains);
 const isChinaDeployment = import.meta.env.SITE_REGION === 'cn';
+const icpNumber = import.meta.env.PUBLIC_ICP_NUMBER?.trim();
 const classLabels = {
   'national-standard': '国家标准',
   'occupational-health': '职业健康指南',
@@ -199,8 +200,8 @@ const classLabels = {
         <p>合身工位由 Barry 独立设计并开源。你的数据只保存在当前浏览器中，不会上传。</p>
         <div class="footer-legal">
           <p>这些结果只作为设置工位的起点，不能替代专业人体工学评估或医疗建议。</p>
-          {isChinaDeployment && (
-            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">粤ICP备2026096905号</a>
+          {isChinaDeployment && icpNumber && (
+            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">{icpNumber}</a>
           )}
         </div>
       </section>

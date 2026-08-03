@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  CN_ICP_NUMBER: 粤ICP备2026096905号
+
 concurrency:
   group: production-sites-${{ github.ref }}
   cancel-in-progress: true
@@ -42,7 +45,7 @@ jobs:
         run: npm run build
 
       - name: Verify global build
-        run: '! grep -q "粤ICP备2026096905号" dist/index.html'
+        run: '! grep -Fq "$CN_ICP_NUMBER" dist/index.html'
 
       - name: Upload global site
         uses: actions/upload-artifact@v4
@@ -56,9 +59,10 @@ jobs:
         run: npm run build
         env:
           SITE_REGION: cn
+          PUBLIC_ICP_NUMBER: ${{ env.CN_ICP_NUMBER }}
 
       - name: Verify mainland China build
-        run: grep -q "粤ICP备2026096905号" dist/index.html
+        run: grep -Fq "$CN_ICP_NUMBER" dist/index.html
 
       - name: Upload mainland China site
         uses: actions/upload-artifact@v4
