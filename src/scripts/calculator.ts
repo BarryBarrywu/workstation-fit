@@ -138,12 +138,10 @@ function renderResults(result: WorkstationResult) {
     const card = document.createElement('article');
     card.className = [
       'result-card',
-      activeResult === definition.key ? 'is-active' : '',
       currentCalibrationKey === definition.key ? 'is-calibration-target' : '',
     ].filter(Boolean).join(' ');
     card.dataset.metric = definition.metric;
     card.dataset.result = definition.key;
-    const selected = activeResult === definition.key;
     const valueMarkup = definition.key === 'monitorDistance'
       ? `<strong class="range-line"><b class="range-value">${formatRange(range)}</b><small>cm</small></strong>`
       : `<div class="suggestion-line"><span class="suggestion-label">建议起点</span><strong><b class="range-value">${rounded.reference}</b><small>cm</small></strong></div>
@@ -156,9 +154,9 @@ function renderResults(result: WorkstationResult) {
           <p>${definition.hint}</p>
         </div>
         <div class="result-meta">
-          <button class="result-view-button" type="button" aria-label="${definition.label}，联动查看模型" aria-pressed="${selected}">
+          <button class="result-view-button" type="button" aria-label="${definition.label}，联动查看模型" aria-pressed="false">
             <span class="result-view-indicator" aria-hidden="true"></span>
-            <span class="result-view-label">${selected ? '正在查看' : '查看模型'}</span>
+            <span class="result-view-label">查看模型</span>
           </button>
           ${status === 'trend' ? '<span class="evidence-status is-trend">趋势估算</span>' : ''}
           <a class="source-footnote" href="#evidence-${definition.evidence}" aria-label="${definition.label}来源">来源 ↘</a>
@@ -174,6 +172,8 @@ function renderResults(result: WorkstationResult) {
 
     resultContainer.append(card);
   }
+
+  syncResultSelection();
 }
 
 function renderPostureControls() {
