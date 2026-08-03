@@ -135,7 +135,7 @@ function renderResults(result: WorkstationResult) {
     card.tabIndex = 0;
     const valueMarkup = definition.key === 'monitorDistance'
       ? `<strong class="range-line"><b class="range-value">${formatRange(range)}</b><small>cm</small></strong>`
-      : `<div class="suggestion-line"><span>建议从</span><strong><b class="range-value">${rounded.reference}</b><small>cm</small></strong><span>开始</span></div>
+      : `<div class="suggestion-line"><span class="suggestion-label">建议起点</span><strong><b class="range-value">${rounded.reference}</b><small>cm</small></strong></div>
         <p class="reference-range">参考范围 ${formatRange(range)} cm</p>`;
     card.innerHTML = `
       <div class="result-main">

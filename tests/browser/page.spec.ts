@@ -27,7 +27,7 @@ test('presents the independent calculator before evidence and related content', 
   await expect(page).toHaveURL(/#evidence-sittingMonitorTop$/);
 });
 
-test('shows suggested starts and reference ranges without numeric adjustment controls', async ({ page }) => {
+test('shows suggested starts and reference ranges without numeric adjustment controls', async ({ page }, testInfo) => {
   await page.addInitScript(() => localStorage.setItem('workstation-fit:onboarding-seen', 'true'));
   const externalRequests: string[] = [];
   page.on('request', (request) => {
@@ -36,10 +36,16 @@ test('shows suggested starts and reference ranges without numeric adjustment con
   await page.goto('/');
 
   const seatCard = page.locator('[data-result="seat"]');
-  await expect(seatCard.getByText('建议从', { exact: true })).toBeVisible();
+  await expect(seatCard.getByText('建议起点', { exact: true })).toBeVisible();
   await expect(seatCard.getByText(/参考范围 \d+–\d+ cm/)).toBeVisible();
   await expect(page.getByText('身体微调', { exact: true })).toHaveCount(0);
   await expect(page.locator('#results').getByRole('slider')).toHaveCount(0);
+  await expect(page.locator('.dimension-label.is-active')).toHaveText(/建议 \d+ cm/);
+  const visibleLabels = await page.locator('.dimension-label').evaluateAll((labels) => labels.filter((label) => {
+    const style = getComputedStyle(label);
+    return style.display !== 'none' && style.visibility !== 'hidden';
+  }).length);
+  expect(visibleLabels).toBe(testInfo.project.name === 'mobile' ? 1 : 3);
 
   await page.locator('#height-number').fill('180');
   await page.locator('#height-number').press('Enter');
@@ -60,7 +66,7 @@ test('recovers safely from damaged local profile data', async ({ page }) => {
   await page.goto('/');
 
   await expect(page.getByLabel('身高，厘米')).toHaveValue('173');
-  await expect(page.locator('[data-result="seat"]').getByText('建议从', { exact: true })).toBeVisible();
+  await expect(page.locator('[data-result="seat"]').getByText('建议起点', { exact: true })).toBeVisible();
 });
 
 test('completes physical checks and requests reconfirmation after height changes', async ({ page }) => {

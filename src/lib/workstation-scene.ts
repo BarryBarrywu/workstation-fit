@@ -249,17 +249,17 @@ export async function createWorkstationScene(stage: HTMLElement, canvas: HTMLCan
       seat: {
         start: new THREE.Vector3(seatX, 0.02, -0.72),
         end: new THREE.Vector3(seatX, seatHeight, -0.72),
-        text: `${Math.round(state.result.seat.min)}–${Math.round(state.result.seat.max)} cm`,
+        text: `建议 ${Math.round(state.result.seat.reference)} cm`,
       },
       desk: {
         start: new THREE.Vector3(deskX, 0.02, -0.72),
         end: new THREE.Vector3(deskX, deskHeight, -0.72),
-        text: `${Math.round((state.posture === 'sitting' ? state.result.sittingDesk : state.result.standingDesk).min)}–${Math.round((state.posture === 'sitting' ? state.result.sittingDesk : state.result.standingDesk).max)} cm`,
+        text: `建议 ${Math.round((state.posture === 'sitting' ? state.result.sittingDesk : state.result.standingDesk).reference)} cm`,
       },
       monitor: {
         start: new THREE.Vector3(monitorX, 0.02, 0.73),
         end: new THREE.Vector3(monitorX, monitorTop, 0.73),
-        text: `${Math.round((state.posture === 'sitting' ? state.result.sittingMonitorTop : state.result.standingMonitorTop).min)}–${Math.round((state.posture === 'sitting' ? state.result.sittingMonitorTop : state.result.standingMonitorTop).max)} cm`,
+        text: `建议 ${Math.round((state.posture === 'sitting' ? state.result.sittingMonitorTop : state.result.standingMonitorTop).reference)} cm`,
       },
       distance: {
         start: new THREE.Vector3(-0.42, monitorTop - 0.45, 0),
