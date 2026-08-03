@@ -6,11 +6,12 @@ test('presents the independent calculator before evidence and related content', 
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
 
   const sections = page.locator('main > section');
-  await expect(sections).toHaveCount(4);
+  await expect(sections).toHaveCount(5);
   await expect(sections.nth(0)).toHaveAttribute('id', 'calculator');
   await expect(sections.nth(1)).toHaveAttribute('id', 'evidence');
   await expect(sections.nth(2)).toHaveAttribute('id', 'episode');
-  await expect(sections.nth(3)).toHaveAttribute('id', 'independent-footer');
+  await expect(sections.nth(3)).toHaveAttribute('id', 'related-links');
+  await expect(sections.nth(4)).toHaveAttribute('id', 'independent-footer');
 
   await expect(page.getByText('西昊', { exact: false })).toHaveCount(0);
   await expect(page.getByRole('heading', { level: 1, name: '按身高，调桌椅。' })).toBeVisible();
@@ -18,8 +19,12 @@ test('presents the independent calculator before evidence and related content', 
   await expect(page.getByText('实时联动', { exact: false })).toHaveCount(0);
   await expect(page.getByText('滚轮缩放', { exact: false })).toHaveCount(0);
   await expect(page.getByRole('link', { name: /椅面高度来源/ })).toHaveAttribute('href', '#evidence-seat');
-  await expect(page.locator('#episode').getByText('待发布', { exact: true })).toHaveCount(4);
+  await expect(page.locator('#episode').getByText('待发布', { exact: true })).toHaveCount(5);
+  await expect(page.locator('#episode .brand-icon')).toHaveCount(5);
+  await expect(page.locator('#episode .platform-links > span').filter({ hasText: '小红书' })).toBeVisible();
   await expect(page.locator('#episode').getByRole('link')).toHaveCount(0);
+  await expect(page.locator('#related-links a[href="https://github.com/BarryBarrywu/workstation-fit"]')).toContainText('暂未公开');
+  await expect(page.locator('#related-links a[href="https://tutti.barrybarrywu.com/zh/"]')).toContainText('了解 Tutti');
 
   await page.getByRole('link', { name: /屏幕顶部来源/ }).click();
   await expect(page.locator('#evidence-sittingMonitorTop')).toBeVisible();

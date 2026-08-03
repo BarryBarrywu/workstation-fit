@@ -1,7 +1,8 @@
 ---
 import '../styles/global.css';
+import BrandIcon from '../components/BrandIcon.astro';
 import { evidenceChains } from '../lib/ergonomics';
-import { relatedEpisode } from '../lib/content';
+import { relatedEpisode, relatedLinks } from '../lib/content';
 
 const chains = Object.values(evidenceChains);
 const isChinaDeployment = import.meta.env.SITE_REGION === 'cn';
@@ -181,9 +182,17 @@ const classLabels = {
           <p>{relatedEpisode.summary}</p>
           <div class="platform-links" aria-label="视频发布平台">
             {relatedEpisode.destinations.map((destination) => destination.url ? (
-              <a href={destination.url} target="_blank" rel="noreferrer">{destination.label}</a>
+              <a href={destination.url} target="_blank" rel="noreferrer">
+                <BrandIcon name={destination.icon} />
+                <strong>{destination.label}</strong>
+                <small>观看 ↗</small>
+              </a>
             ) : (
-              <span>{destination.label} <small>待发布</small></span>
+              <span class="is-pending">
+                <BrandIcon name={destination.icon} />
+                <strong>{destination.label}</strong>
+                <small>待发布</small>
+              </span>
             ))}
           </div>
         </div>
@@ -193,6 +202,26 @@ const classLabels = {
           ) : (
             <div class="safe-area"><span>16:9 封面预留</span><small>中央 4:3 安全区域</small></div>
           )}
+        </div>
+      </section>
+
+      <section id="related-links" class="content-section related-links-section" aria-labelledby="related-links-title">
+        <div class="section-intro">
+          <p class="eyebrow">RELATED LINKS</p>
+          <h2 id="related-links-title">发现更多。</h2>
+          <p>看看作者更多好玩、好用的作品。</p>
+        </div>
+        <div class="related-link-grid">
+          {relatedLinks.map((link) => (
+            <a href={link.url} target="_blank" rel="noreferrer">
+              <BrandIcon name={link.icon} />
+              <div>
+                <h3>{link.label}</h3>
+                <p>{link.description}</p>
+              </div>
+              <span>{link.meta} ↗</span>
+            </a>
+          ))}
         </div>
       </section>
 

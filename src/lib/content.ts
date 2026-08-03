@@ -1,6 +1,17 @@
+export type BrandIconName = 'bilibili' | 'youtube' | 'wechat' | 'douyin' | 'xiaohongshu' | 'github' | 'tutti';
+
 export type EpisodeDestination = {
   label: string;
+  icon: BrandIconName;
   url: string | null;
+};
+
+export type RelatedLink = {
+  label: string;
+  description: string;
+  icon: BrandIconName;
+  url: string;
+  meta: string;
 };
 
 export const relatedEpisode = {
@@ -9,9 +20,27 @@ export const relatedEpisode = {
   cover: null as string | null,
   coverAlt: '相关视频封面',
   destinations: [
-    { label: 'B站', url: null },
-    { label: 'YouTube', url: null },
-    { label: '微信公众号', url: null },
-    { label: '抖音', url: null },
+    { label: 'B站', icon: 'bilibili', url: null },
+    { label: 'YouTube', icon: 'youtube', url: null },
+    { label: '微信公众号', icon: 'wechat', url: null },
+    { label: '抖音', icon: 'douyin', url: null },
+    { label: '小红书', icon: 'xiaohongshu', url: null },
   ] satisfies EpisodeDestination[],
 };
+
+export const relatedLinks = [
+  {
+    label: '合身工位 · GitHub',
+    description: '项目仓库目前仍在整理中。公开后，可以在这里查看源码、计算方法和后续更新。',
+    icon: 'github',
+    url: 'https://github.com/BarryBarrywu/workstation-fit',
+    meta: '暂未公开',
+  },
+  {
+    label: 'Tutti for Mac',
+    description: '一款 macOS 菜单栏音频工具，让多台输出设备同时播放，并集中控制设备和每个 App 的音量。',
+    icon: 'tutti',
+    url: 'https://tutti.barrybarrywu.com/zh/',
+    meta: '了解 Tutti',
+  },
+] satisfies RelatedLink[];
