@@ -2,7 +2,7 @@
 
 ## Scope
 
-- Static bilingual ergonomic workstation calculator hosted on Cloudflare.
+- Static bilingual ergonomic workstation calculator hosted on Cloudflare with a mainland China Nginx mirror.
 - All personal measurements and calculations stay in the browser.
 - V1 uses Astro, TypeScript, and Three.js without a UI framework.
 

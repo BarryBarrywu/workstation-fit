@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { versionedAssetPath } from './assets';
 import type { MetricKey, Posture, WorkstationResult } from './ergonomics';
 import { createFurnitureRig } from './furniture-rig';
 
@@ -116,7 +117,7 @@ export async function createWorkstationScene(stage: HTMLElement, canvas: HTMLCan
 
   const loader = new GLTFLoader();
   const [robotGltf, furnitureRig] = await Promise.all([
-    loader.loadAsync('/models/workstation-guide.glb'),
+    loader.loadAsync(versionedAssetPath('/models/workstation-guide.glb')),
     createFurnitureRig(loader, CM * 100, amber),
   ]);
   scene.add(furnitureRig.object);

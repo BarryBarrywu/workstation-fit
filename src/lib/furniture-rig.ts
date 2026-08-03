@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { versionedAssetPath } from './assets';
 import type { MetricKey } from './ergonomics';
 
 type FurnitureState = {
@@ -41,7 +42,7 @@ function placeRigidLink(link: THREE.Object3D, start: THREE.Vector3, end: THREE.V
 }
 
 export async function createFurnitureRig(loader: GLTFLoader, sceneMeters: number, highlightColor: number) {
-  const gltf = await loader.loadAsync('/models/workstation-furniture.glb');
+  const gltf = await loader.loadAsync(versionedAssetPath('/models/workstation-furniture.glb'));
   const model = gltf.scene;
   const object = new THREE.Group();
   object.rotation.y = Math.PI / 2;

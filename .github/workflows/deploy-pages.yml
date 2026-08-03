@@ -1,4 +1,4 @@
-name: Deploy Cloudflare Pages
+name: Deploy production sites
 
 on:
   push:
@@ -10,11 +10,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: cloudflare-pages-production
+  group: production-sites-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -35,10 +35,54 @@ jobs:
       - name: Check types
         run: npx tsc --noEmit
 
+      - name: Compute model asset version
+        run: echo "PUBLIC_ASSET_VERSION=$(sha256sum public/models/*.glb | sha256sum | cut -c1-16)" >> "$GITHUB_ENV"
+
       - name: Build site
         run: npm run build
 
-      - name: Deploy production
+      - name: Verify global build
+        run: '! grep -q "粤ICP备2026096905号" dist/index.html'
+
+      - name: Upload global site
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-global
+          path: dist
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: Build mainland China site
+        run: npm run build
+        env:
+          SITE_REGION: cn
+
+      - name: Verify mainland China build
+        run: grep -q "粤ICP备2026096905号" dist/index.html
+
+      - name: Upload mainland China site
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-cn
+          path: dist
+          if-no-files-found: error
+          retention-days: 3
+
+  deploy-cloudflare:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: cloudflare-production
+    concurrency:
+      group: cloudflare-pages-production
+      cancel-in-progress: true
+    steps:
+      - name: Download global site
+        uses: actions/download-artifact@v4
+        with:
+          name: site-global
+          path: dist
+
+      - name: Deploy Cloudflare Pages
         run: >-
           npx wrangler@4.118.0 pages deploy dist
           --project-name workstation-fit
@@ -49,3 +93,55 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           GITHUB_COMMIT_MESSAGE: ${{ github.event.head_commit.message || 'Manual deployment' }}
+
+  deploy-mainland-china:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: mainland-china-production
+    concurrency:
+      group: mainland-china-production
+      cancel-in-progress: true
+    steps:
+      - name: Download mainland China site
+        uses: actions/download-artifact@v4
+        with:
+          name: site-cn
+          path: dist
+
+      - name: Configure SSH
+        env:
+          CN_DEPLOY_HOST_KEY: ${{ secrets.CN_DEPLOY_HOST_KEY }}
+          CN_DEPLOY_SSH_KEY: ${{ secrets.CN_DEPLOY_SSH_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$CN_DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$CN_DEPLOY_HOST_KEY" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+
+      - name: Upload release
+        env:
+          CN_DEPLOY_HOST: ${{ vars.CN_DEPLOY_HOST }}
+          CN_DEPLOY_ROOT: ${{ vars.CN_DEPLOY_ROOT }}
+          CN_DEPLOY_USER: ${{ vars.CN_DEPLOY_USER }}
+        run: |
+          release_dir="$CN_DEPLOY_ROOT/releases/$GITHUB_SHA"
+          ssh "$CN_DEPLOY_USER@$CN_DEPLOY_HOST" "mkdir -p '$release_dir'"
+          rsync --archive --compress --delete dist/ "$CN_DEPLOY_USER@$CN_DEPLOY_HOST:$release_dir/"
+
+      - name: Activate release
+        env:
+          CN_DEPLOY_HOST: ${{ vars.CN_DEPLOY_HOST }}
+          CN_DEPLOY_ROOT: ${{ vars.CN_DEPLOY_ROOT }}
+          CN_DEPLOY_USER: ${{ vars.CN_DEPLOY_USER }}
+        run: |
+          ssh "$CN_DEPLOY_USER@$CN_DEPLOY_HOST" "bash -s" -- "$GITHUB_SHA" "$CN_DEPLOY_ROOT" <<'REMOTE'
+          set -euo pipefail
+          release_sha="$1"
+          release_root="$2"
+          release_dir="$release_root/releases/$release_sha"
+          test -f "$release_dir/index.html"
+          ln -sfn "releases/$release_sha" "$release_root/current.next"
+          mv -Tf "$release_root/current.next" "$release_root/current"
+          cd "$release_root/releases"
+          ls -1dt -- */ 2>/dev/null | tail -n +6 | xargs -r rm -rf --
+          REMOTE
