@@ -1,7 +1,7 @@
 const steps = [
-  { target: 'height', placement: 'right', title: '先输入身高', copy: '身高决定可追溯的建议起点。腿、躯干和手臂比例的差异，需要再按真实身体检查实际摆位。' },
-  { target: 'posture', placement: 'right', title: '坐姿与站姿分开', copy: '坐姿与站姿的检查进度独立保存，切换时不会互相覆盖。' },
-  { target: 'scene', placement: 'inside', title: '直接拖动机器人', copy: '拖动可旋转，滚轮或双指可缩放。选中一个数值时，对应部位和尺寸线会高亮。' },
+  { target: 'height', placement: 'right', title: '先输入身高', copy: '输入身高后，我们会给出有出处的建议起点。每个人的腿长、躯干和手臂比例不同，还要按身体感受调整实际工位。' },
+  { target: 'posture', placement: 'right', title: '坐姿与站姿分开', copy: '坐姿和站姿的检查进度分别保存，切换时互不影响。' },
+  { target: 'scene', placement: 'inside', title: '直接拖动机器人', copy: '拖动机器人可以旋转，滚轮或双指可以缩放。选中一项数值，对应部位和尺寸线会高亮。' },
 ];
 
 const required = <T extends Element>(selector: string): T => {

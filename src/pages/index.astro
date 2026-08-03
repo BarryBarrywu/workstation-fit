@@ -17,8 +17,8 @@ const classLabels = {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="description" content="输入身高，获得有来源依据的椅子、坐站桌和显示器设置起始范围。所有个人数据都留在浏览器。" />
-    <title>合身工位｜找到更适合你的桌椅高度</title>
+    <meta name="description" content="输入身高，查看有出处的椅面、坐站桌与显示器设置建议。所有个人数据都只保存在浏览器中。" />
+    <title>合身工位｜找到适合你的桌椅与显示器高度</title>
   </head>
   <body>
     <header class="site-header">
@@ -44,9 +44,9 @@ const classLabels = {
             <div>
               <p class="section-label">建议下一步</p>
               <h2 id="calibration-callout-title">30 秒身体校准</h2>
-              <p id="calibration-summary">按脚掌、手肘和视线，确认坐姿的三个关键位置。</p>
+              <p id="calibration-summary">跟着脚掌、手肘和视线，检查坐姿的三个关键位置。</p>
             </div>
-            <button id="start-calibration" class="primary-button" type="button">开始检查坐姿</button>
+            <button id="start-calibration" class="primary-button" type="button">开始坐姿检查</button>
           </aside>
 
           <div class="height-control" data-onboarding-target="height">
@@ -92,7 +92,7 @@ const classLabels = {
 
         <div id="stage" class="stage" data-onboarding-target="scene" aria-label="可旋转的工位设置三维示意图">
           <canvas id="workstation-canvas"></canvas>
-          <p class="stage-fallback" hidden>当前设备无法显示 3D 场景，数值计算与身体校准仍可正常使用。</p>
+          <p class="stage-fallback" hidden>这台设备暂时无法显示 3D 场景，数值计算和身体检查不受影响。</p>
         </div>
       </section>
 
@@ -100,7 +100,7 @@ const classLabels = {
         <div class="section-intro">
           <p class="eyebrow">EVIDENCE CHAINS</p>
           <h2 id="evidence-title">数值，怎么来的。</h2>
-          <p>原始资料与项目换算分开写。品牌计算器和开源项目没有被用作数值权威。</p>
+          <p>每项数值都列出原始资料和换算方式。品牌计算器与开源项目只作参考，不作为数值依据。</p>
         </div>
         <div class="evidence-browser">
           <div class="evidence-deck" aria-live="polite">
@@ -191,8 +191,8 @@ const classLabels = {
       </section>
 
       <section id="independent-footer" class="independent-footer" aria-label="独立工具说明">
-        <p>合身工位由 Barry 独立设计并开源。个人数据只保存在当前浏览器，不会上传。</p>
-        <p>结果用于工位设置起点，不替代专业人体工学评估或医疗建议。</p>
+        <p>合身工位由 Barry 独立设计并开源。你的数据只保存在当前浏览器中，不会上传。</p>
+        <p>这些结果只作为设置工位的起点，不能替代专业人体工学评估或医疗建议。</p>
       </section>
     </main>
 

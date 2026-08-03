@@ -29,13 +29,13 @@ type CardDefinition = {
 
 const cards: Record<Posture, CardDefinition[]> = {
   sitting: [
-    { key: 'seat', evidence: 'seat', metric: 'seat', label: '椅面高度', hint: '脚掌完全着地，膝盖接近或略高于椅面' },
-    { key: 'sittingDesk', evidence: 'sittingDesk', metric: 'desk', label: '桌面高度', hint: '肩膀放松，前臂自然接近桌面' },
-    { key: 'sittingMonitorTop', evidence: 'sittingMonitorTop', metric: 'monitor', label: '屏幕顶部', hint: '不高于自然眼线' },
+    { key: 'seat', evidence: 'seat', metric: 'seat', label: '椅面高度', hint: '双脚平稳着地，膝盖接近或略高于椅面' },
+    { key: 'sittingDesk', evidence: 'sittingDesk', metric: 'desk', label: '桌面高度', hint: '肩膀放松，前臂自然落在桌面附近' },
+    { key: 'sittingMonitorTop', evidence: 'sittingMonitorTop', metric: 'monitor', label: '屏幕顶部', hint: '屏幕顶部不高于自然视线' },
   ],
   standing: [
-    { key: 'standingDesk', evidence: 'standingDesk', metric: 'desk', label: '桌面高度', hint: '肩膀放松，手腕与前臂接近一条线' },
-    { key: 'standingMonitorTop', evidence: 'standingMonitorTop', metric: 'monitor', label: '屏幕顶部', hint: '不高于自然眼线' },
+    { key: 'standingDesk', evidence: 'standingDesk', metric: 'desk', label: '桌面高度', hint: '肩膀放松，手腕与前臂自然成一条线' },
+    { key: 'standingMonitorTop', evidence: 'standingMonitorTop', metric: 'monitor', label: '屏幕顶部', hint: '屏幕顶部不高于自然视线' },
     { key: 'monitorDistance', evidence: 'distance', metric: 'distance', label: '观看距离', hint: '先保持一臂左右，再按阅读舒适度调整' },
   ],
 };
@@ -181,17 +181,17 @@ function renderCalibration() {
   const state = profile.calibration[posture];
   const postureLabel = posture === 'sitting' ? '坐姿' : '站姿';
   calibrationSummary.textContent = state.status === 'complete'
-    ? `${postureLabel}已检查。进度已保存在当前浏览器。`
+    ? `${postureLabel}检查已完成，进度保存在当前浏览器中。`
     : state.status === 'reconfirm'
-      ? `身高已改变，请重新确认${postureLabel}的身体接触点。`
+      ? `身高变了，请重新检查${postureLabel}的身体位置。`
       : posture === 'sitting'
-        ? '按脚掌、手肘和视线，确认坐姿的三个关键位置。'
-        : '按手肘和视线，确认站姿的两个关键位置。';
+        ? '跟着脚掌、手肘和视线，检查坐姿的三个关键位置。'
+        : '跟着手肘和视线，检查站姿的两个关键位置。';
   startCalibrationButton.textContent = state.status === 'in-progress'
-    ? `继续检查${postureLabel}`
+    ? `继续${postureLabel}检查`
     : state.status === 'complete' || state.status === 'reconfirm'
       ? `重新检查${postureLabel}`
-      : `开始检查${postureLabel}`;
+      : `开始${postureLabel}检查`;
 
   if (!calibrating) {
     calibrationPanel.hidden = true;

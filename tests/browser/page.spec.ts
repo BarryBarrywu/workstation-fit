@@ -65,7 +65,7 @@ test('completes physical checks and requests reconfirmation after height changes
   await page.addInitScript(() => localStorage.setItem('workstation-fit:onboarding-seen', 'true'));
   await page.goto('/');
 
-  await page.getByRole('button', { name: '开始检查坐姿' }).click();
+  await page.getByRole('button', { name: '开始坐姿检查' }).click();
   await expect(page.getByText('1 / 3')).toBeVisible();
   await expect(page.getByRole('heading', { name: '先看脚掌' })).toBeVisible();
   await page.getByRole('button', { name: '已调整，下一步' }).click();
@@ -73,12 +73,12 @@ test('completes physical checks and requests reconfirmation after height changes
   await page.getByRole('button', { name: '已调整，下一步' }).click();
   await expect(page.getByRole('heading', { name: '最后看视线' })).toBeVisible();
   await page.getByRole('button', { name: '完成检查' }).click();
-  await expect(page.getByText('坐姿已检查。进度已保存在当前浏览器。')).toBeVisible();
+  await expect(page.getByText('坐姿检查已完成，进度保存在当前浏览器中。')).toBeVisible();
   await expect(page.getByRole('button', { name: '重新检查坐姿' })).toBeVisible();
 
   await page.locator('#height-number').fill('180');
   await page.locator('#height-number').press('Enter');
-  await expect(page.getByText('身高已改变，请重新确认坐姿的身体接触点。')).toBeVisible();
+  await expect(page.getByText('身高变了，请重新检查坐姿的身体位置。')).toBeVisible();
 
   await expect(page.getByRole('button', { name: '重新检查坐姿' })).toBeVisible();
   await expect(page.getByRole('button', { name: '重置校准' })).toHaveCount(0);
@@ -88,11 +88,11 @@ test('supports pausing and completing standing checks independently', async ({ p
   await page.addInitScript(() => localStorage.setItem('workstation-fit:onboarding-seen', 'true'));
   await page.goto('/');
   await page.getByRole('button', { name: '站着' }).click();
-  await page.getByRole('button', { name: '开始检查站姿' }).click();
+  await page.getByRole('button', { name: '开始站姿检查' }).click();
   await expect(page.getByText('1 / 2')).toBeVisible();
   await page.getByRole('button', { name: '稍后继续' }).click();
-  await expect(page.getByRole('button', { name: '继续检查站姿' })).toBeVisible();
-  await page.getByRole('button', { name: '继续检查站姿' }).click();
+  await expect(page.getByRole('button', { name: '继续站姿检查' })).toBeVisible();
+  await page.getByRole('button', { name: '继续站姿检查' }).click();
   await expect(page.getByRole('button', { name: '跳过校准' })).toHaveCount(0);
   await page.getByRole('button', { name: '已调整，下一步' }).click();
   await page.getByRole('button', { name: '完成检查' }).click();
@@ -105,7 +105,7 @@ test('onboarding is skippable, replayable, and leaves fit values unchanged', asy
   await expect(dialog).toBeVisible();
   await page.getByRole('button', { name: '下一步' }).click();
   await expect(page.getByRole('dialog', { name: '坐姿与站姿分开' })).toBeVisible();
-  await expect(page.getByText('坐姿与站姿的检查进度独立保存，切换时不会互相覆盖。')).toBeVisible();
+  await expect(page.getByText('坐姿和站姿的检查进度分别保存，切换时互不影响。')).toBeVisible();
   await page.getByRole('button', { name: '下一步' }).click();
   await expect(page.getByRole('dialog', { name: '直接拖动机器人' })).toBeVisible();
   await page.getByRole('button', { name: '开始使用' }).click();
@@ -123,7 +123,7 @@ test('uses a compact top 3D viewport during mobile calibration', async ({ page }
   test.skip(testInfo.project.name !== 'mobile');
   await page.addInitScript(() => localStorage.setItem('workstation-fit:onboarding-seen', 'true'));
   await page.goto('/');
-  await page.getByRole('button', { name: '开始检查坐姿' }).click();
+  await page.getByRole('button', { name: '开始坐姿检查' }).click();
 
   const stage = page.locator('#stage');
   const box = await stage.boundingBox();
@@ -132,7 +132,7 @@ test('uses a compact top 3D viewport during mobile calibration', async ({ page }
   expect(box!.height).toBeGreaterThan(290);
   expect(box!.height).toBeLessThan(330);
   await expect(page.getByRole('heading', { name: '先看脚掌' })).toBeInViewport({ ratio: 1 });
-  await expect(page.getByText('坐到底并靠住椅背。', { exact: false })).toBeInViewport({ ratio: 1 });
+  await expect(page.getByText('先坐到底并靠住椅背', { exact: false })).toBeInViewport({ ratio: 1 });
   await expect(page.getByRole('button', { name: '稍后继续' })).toBeInViewport({ ratio: 1 });
   await expect(page.getByRole('button', { name: '已调整，下一步' })).toBeInViewport({ ratio: 1 });
 });
@@ -143,10 +143,10 @@ test('keeps calculation and calibration available without WebGL and with reduced
   await page.addInitScript(() => localStorage.setItem('workstation-fit:onboarding-seen', 'true'));
   await page.goto('/');
 
-  await expect(page.getByText('当前设备无法显示 3D 场景，数值计算与身体校准仍可正常使用。')).toBeVisible();
-  await page.getByRole('button', { name: '开始检查坐姿' }).click();
+  await expect(page.getByText('这台设备暂时无法显示 3D 场景，数值计算和身体检查不受影响。')).toBeVisible();
+  await page.getByRole('button', { name: '开始坐姿检查' }).click();
   await page.getByRole('button', { name: '已调整，下一步' }).click();
   await expect(page.getByRole('heading', { name: '再看手肘' })).toBeVisible();
   await page.getByRole('button', { name: '稍后继续' }).click();
-  await expect(page.getByRole('button', { name: '继续检查坐姿' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '继续坐姿检查' })).toBeVisible();
 });

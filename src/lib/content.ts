@@ -4,8 +4,8 @@ export type EpisodeDestination = {
 };
 
 export const relatedEpisode = {
-  title: '从数字，到一套真实工位。',
-  summary: '相关视频会讲解如何把起始范围落实到桌子、椅子与显示器。发布后可从下面的平台继续观看。',
+  title: '从建议数值，到真实工位。',
+  summary: '相关视频会演示怎样把这些建议用到桌子、椅子和显示器上。发布后，可以从下面的平台观看。',
   cover: null as string | null,
   coverAlt: '相关视频封面',
   destinations: [
