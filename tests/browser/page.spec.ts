@@ -46,8 +46,22 @@ test('shows suggested starts and reference ranges without numeric adjustment con
   await page.goto('/');
 
   const seatCard = page.locator('[data-result="seat"]');
+  const deskCard = page.locator('[data-result="sittingDesk"]');
+  const monitorCard = page.locator('[data-result="sittingMonitorTop"]');
+  const seatViewButton = seatCard.getByRole('button', { name: '椅面高度，联动查看模型' });
+  const deskViewButton = deskCard.getByRole('button', { name: '桌面高度，联动查看模型' });
   await expect(seatCard.getByText('建议起点', { exact: true })).toBeVisible();
   await expect(seatCard.getByText(/参考范围 \d+–\d+ cm/)).toBeVisible();
+  await expect(seatViewButton).toHaveAttribute('aria-pressed', 'false');
+  await expect(seatViewButton).toContainText('查看模型');
+  await expect(deskViewButton).toHaveAttribute('aria-pressed', 'true');
+  await expect(deskViewButton).toContainText('正在查看');
+  await seatViewButton.click();
+  await expect(seatCard).toHaveClass(/is-active/);
+  await expect(seatViewButton).toHaveAttribute('aria-pressed', 'true');
+  await expect(deskViewButton).toHaveAttribute('aria-pressed', 'false');
+  await monitorCard.locator('.result-copy').click();
+  await expect(monitorCard).toHaveClass(/is-active/);
   await expect(page.getByText('身体微调', { exact: true })).toHaveCount(0);
   await expect(page.locator('#results').getByRole('slider')).toHaveCount(0);
   await expect(page.locator('.dimension-label.is-active')).toHaveText(/建议 \d+ cm/);

@@ -106,10 +106,21 @@ function updateScene(result: WorkstationResult) {
   sceneController?.update({ height: profile.height, posture, activeMetric, result });
 }
 
+function syncResultSelection() {
+  resultContainer.querySelectorAll<HTMLElement>('.result-card').forEach((card) => {
+    const selected = card.dataset.result === activeResult;
+    card.classList.toggle('is-active', selected);
+    const button = card.querySelector<HTMLButtonElement>('.result-view-button');
+    button?.setAttribute('aria-pressed', String(selected));
+    const label = button?.querySelector<HTMLElement>('.result-view-label');
+    if (label) label.textContent = selected ? '正在查看' : '查看模型';
+  });
+}
+
 function selectResult(definition: CardDefinition, result: WorkstationResult) {
   activeMetric = definition.metric;
   activeResult = definition.key;
-  resultContainer.querySelectorAll('.result-card').forEach((card) => card.classList.toggle('is-active', card.getAttribute('data-result') === activeResult));
+  syncResultSelection();
   updateScene(result);
 }
 
@@ -132,7 +143,7 @@ function renderResults(result: WorkstationResult) {
     ].filter(Boolean).join(' ');
     card.dataset.metric = definition.metric;
     card.dataset.result = definition.key;
-    card.tabIndex = 0;
+    const selected = activeResult === definition.key;
     const valueMarkup = definition.key === 'monitorDistance'
       ? `<strong class="range-line"><b class="range-value">${formatRange(range)}</b><small>cm</small></strong>`
       : `<div class="suggestion-line"><span class="suggestion-label">建议起点</span><strong><b class="range-value">${rounded.reference}</b><small>cm</small></strong></div>
@@ -145,6 +156,10 @@ function renderResults(result: WorkstationResult) {
           <p>${definition.hint}</p>
         </div>
         <div class="result-meta">
+          <button class="result-view-button" type="button" aria-label="${definition.label}，联动查看模型" aria-pressed="${selected}">
+            <span class="result-view-indicator" aria-hidden="true"></span>
+            <span class="result-view-label">${selected ? '正在查看' : '查看模型'}</span>
+          </button>
           ${status === 'trend' ? '<span class="evidence-status is-trend">趋势估算</span>' : ''}
           <a class="source-footnote" href="#evidence-${definition.evidence}" aria-label="${definition.label}来源">来源 ↘</a>
         </div>
@@ -152,15 +167,10 @@ function renderResults(result: WorkstationResult) {
     `;
 
     card.addEventListener('click', (event) => {
-      if ((event.target as Element).closest('a')) return;
+      if ((event.target as Element).closest('a, button')) return;
       selectResult(definition, result);
     });
-    card.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        selectResult(definition, result);
-      }
-    });
+    card.querySelector<HTMLButtonElement>('.result-view-button')?.addEventListener('click', () => selectResult(definition, result));
 
     resultContainer.append(card);
   }

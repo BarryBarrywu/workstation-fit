@@ -140,11 +140,11 @@ h1 { max-width: 420px; margin: 0; font-size: clamp(54px, 5.2vw, 78px); line-heig
 .result-heading .section-label { margin-bottom: 6px; }
 .result-heading p:last-child { margin: 0; color: rgba(32, 37, 34, 0.56); font-size: 12px; }
 #posture-caption { color: var(--metal); font-size: 13px; font-weight: 650; }
-.results { margin-top: 14px; border-top: 1px solid var(--line); }
-.result-card { padding: 20px 0 22px; border-bottom: 1px solid var(--line); position: relative; transition: padding 220ms ease, background 220ms ease; }
-.result-card.is-active { padding-left: 12px; color: #3d5145; }
-.result-card.is-calibration-target { margin-inline: -12px; padding-inline: 12px; border-radius: 14px; background: rgba(255, 249, 239, 0.8); box-shadow: 0 0 0 1px rgba(213, 145, 61, 0.28); }
-.result-card:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.results { margin-top: 14px; display: grid; gap: 8px; }
+.result-card { padding: 18px 16px 20px; border: 1px solid var(--line); border-radius: 14px; position: relative; cursor: pointer; transition: border-color 180ms ease, background 180ms ease, color 180ms ease; }
+.result-card:hover { border-color: rgba(32, 37, 34, 0.22); background: rgba(249, 251, 250, 0.45); }
+.result-card.is-active { border-color: rgba(213, 145, 61, 0.48); background: rgba(255, 249, 239, 0.68); color: #3d5145; }
+.result-card.is-calibration-target { border-color: rgba(213, 145, 61, 0.58); background: rgba(255, 249, 239, 0.86); box-shadow: 0 0 0 1px rgba(213, 145, 61, 0.16); }
 .result-main { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .result-copy > span { display: block; font-size: 13px; font-weight: 650; }
 .result-copy strong { display: flex; align-items: baseline; gap: 6px; font-family: "DIN Alternate", ui-monospace, monospace; }
@@ -160,6 +160,13 @@ h1 { max-width: 420px; margin: 0; font-size: clamp(54px, 5.2vw, 78px); line-heig
 .range-line { margin-top: 7px; }
 .result-copy .reference-range { margin-top: 5px; color: var(--metal); font-size: 11px; font-weight: 650; }
 .result-meta { display: flex; align-items: flex-end; gap: 7px; flex-direction: column; }
+.result-view-button { min-height: 31px; padding: 6px 9px; border: 1px solid rgba(32, 37, 34, 0.16); border-radius: 999px; background: rgba(249, 251, 250, 0.52); color: rgba(32, 37, 34, 0.7); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font: inherit; font-size: 10px; font-weight: 650; white-space: nowrap; transition: border-color 180ms ease, background 180ms ease, color 180ms ease, transform 100ms ease; }
+.result-view-button:hover { border-color: rgba(32, 37, 34, 0.32); color: var(--graphite); }
+.result-view-button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.result-view-button:active { transform: translateY(1px); }
+.result-view-indicator { width: 8px; height: 8px; border: 1.5px solid currentColor; border-radius: 50%; }
+.result-view-button[aria-pressed="true"] { border-color: rgba(213, 145, 61, 0.48); background: rgba(213, 145, 61, 0.12); color: #9a601f; }
+.result-view-button[aria-pressed="true"] .result-view-indicator { border-color: var(--amber); background: var(--amber); box-shadow: inset 0 0 0 1.5px rgba(255, 249, 239, 0.9); }
 .evidence-status { padding: 5px 8px; border: 1px solid rgba(32, 37, 34, 0.11); border-radius: 999px; color: rgba(32, 37, 34, 0.62); font-size: 11px; white-space: nowrap; }
 .evidence-status.is-trend { border-color: rgba(213, 145, 61, 0.34); color: #9a601f; background: rgba(255, 249, 239, 0.82); }
 .source-footnote { min-height: 32px; padding: 6px 0 0 10px; color: rgba(32, 37, 34, 0.62); font-size: 11px; text-underline-offset: 3px; }
@@ -315,7 +322,7 @@ h1 { max-width: 420px; margin: 0; font-size: clamp(54px, 5.2vw, 78px); line-heig
   .calibration-callout { align-items: stretch; flex-direction: column; }
   .calibration-callout .primary-button { width: 100%; }
   .stage { min-height: 500px; }
-  .result-card.is-active { padding-left: 0; }
+  .result-card { padding-inline: 14px; }
   .dimension-label:not(.is-active) { display: none; }
   .dimension-label.is-active { padding: 8px 10px; font-size: 13px; }
   .content-section { padding: 72px 0; }
