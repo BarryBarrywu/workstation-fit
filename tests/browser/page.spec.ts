@@ -22,6 +22,10 @@ test('presents the independent calculator before evidence and related content', 
   await expect(page.locator('#episode').getByText('待发布', { exact: true })).toHaveCount(5);
   await expect(page.locator('#episode .brand-icon')).toHaveCount(5);
   await expect(page.locator('#episode .platform-links > span').filter({ hasText: '小红书' })).toBeVisible();
+  await expect(page.locator('#episode .platform-links > span')).toHaveCount(6);
+  const productLinkPlaceholder = page.locator('#episode .platform-links > span').filter({ hasText: '本期商品链接' });
+  await expect(productLinkPlaceholder).toBeVisible();
+  await expect(productLinkPlaceholder).toContainText('待补充');
   await expect(page.locator('#episode').getByRole('link')).toHaveCount(0);
   await expect(page.locator('#related-links a[href="https://github.com/BarryBarrywu/workstation-fit"]')).toContainText('暂未公开');
   await expect(page.locator('#related-links a[href="https://tutti.barrybarrywu.com/zh/"]')).toContainText('了解 Tutti');
