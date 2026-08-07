@@ -1,7 +1,39 @@
+# Dependencies and build output
 node_modules/
 dist/
 .astro/
+coverage/
 test-results/
 playwright-report/
+
+# Local deployment state and secrets
+.wrangler/
+.env
+.env.*
+!.env.example
+!.env.*.example
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+
+# Generated Blender previews
+assets/renders/
+
+# Blender and Python working files
+*.blend[0-9]*
+*.blend~
+__pycache__/
+*.py[cod]
+
+# Logs and editor files
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+.idea/
+.vscode/
+*.swp
+*~
+
+# macOS metadata
 .DS_Store
-*.blend1
