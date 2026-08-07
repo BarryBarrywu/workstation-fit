@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-labelledby="title desc">
+  <title id="title">合身工位的计算与校准流程</title>
+  <desc id="desc">输入身高后，工具生成有证据状态的起始范围，再用三维场景检查椅子、桌面和显示器，最后按身体感受完成校准。</desc>
+
+  <rect width="1200" height="430" rx="28" fill="#202522"/>
+  <text x="56" y="66" fill="#a8b0aa" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="2">FROM ESTIMATE TO REAL FIT</text>
+  <text x="56" y="116" fill="#f9fbfa" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="42" font-weight="720">从建议数值，到真实工位。</text>
+
+  <path d="M182 235H368M470 235H656M758 235H944" stroke="#a8b0aa" stroke-opacity="0.5" stroke-width="2"/>
+  <path d="M356 227L368 235L356 243M644 227L656 235L644 243M932 227L944 235L932 243" fill="none" stroke="#d5913d" stroke-width="2"/>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif">
+    <g transform="translate(56 174)">
+      <circle cx="62" cy="62" r="62" fill="#eef2f0"/>
+      <text x="62" y="54" text-anchor="middle" fill="#202522" font-size="34" font-weight="750">173</text>
+      <text x="62" y="82" text-anchor="middle" fill="#66746b" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16">CM</text>
+      <text x="0" y="168" fill="#f9fbfa" font-size="24" font-weight="700">输入身高</text>
+      <text x="0" y="200" fill="#a8b0aa" font-size="18">简单入口，不假装精确</text>
+    </g>
+
+    <g transform="translate(368 174)">
+      <rect width="102" height="124" rx="18" fill="#eef2f0"/>
+      <rect x="18" y="20" width="66" height="8" rx="4" fill="#a8b0aa"/>
+      <text x="18" y="66" fill="#202522" font-size="28" font-weight="750">70</text>
+      <text x="62" y="66" fill="#66746b" font-size="15">cm</text>
+      <path d="M18 88H84" stroke="#d5913d" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="51" cy="88" r="7" fill="#f9fbfa" stroke="#d5913d" stroke-width="3"/>
+      <text x="0" y="168" fill="#f9fbfa" font-size="24" font-weight="700">获得起始范围</text>
+      <text x="0" y="200" fill="#a8b0aa" font-size="18">来源覆盖与趋势估算分开标注</text>
+    </g>
+
+    <g transform="translate(656 174)">
+      <rect width="102" height="124" rx="18" fill="#eef2f0"/>
+      <path d="M20 92H82M31 92V58H71V92M42 58V38H60V58" fill="none" stroke="#3d5145" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="51" cy="28" r="9" fill="#d5913d"/>
+      <text x="0" y="168" fill="#f9fbfa" font-size="24" font-weight="700">查看 3D 模型</text>
+      <text x="0" y="200" fill="#a8b0aa" font-size="18">切换坐姿、站姿与关键尺寸</text>
+    </g>
+
+    <g transform="translate(944 174)">
+      <rect width="102" height="124" rx="18" fill="#eef2f0"/>
+      <path d="M28 63L45 80L77 42" fill="none" stroke="#3d5145" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="51" cy="63" r="37" fill="none" stroke="#d5913d" stroke-width="4"/>
+      <text x="0" y="168" fill="#f9fbfa" font-size="24" font-weight="700">完成身体校准</text>
+      <text x="0" y="200" fill="#a8b0aa" font-size="18">用脚掌、手肘和视线确认</text>
+    </g>
+  </g>
+</svg>
