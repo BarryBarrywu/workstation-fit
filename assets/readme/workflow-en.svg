@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="470" viewBox="0 0 1200 470" role="img" aria-labelledby="title desc">
+  <title id="title">Workstation Fit calculation and calibration workflow</title>
+  <desc id="desc">Enter height, get evidence-aware starting ranges, inspect the workstation in 3D, and calibrate it against observable body positions.</desc>
+
+  <rect width="1200" height="470" rx="28" fill="#202522"/>
+  <text x="56" y="62" fill="#a8b0aa" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="2">FROM ESTIMATE TO REAL FIT</text>
+  <text x="56" y="112" fill="#f9fbfa" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="40" font-weight="720">Turn a starting range into a workstation that fits.</text>
+
+  <path d="M182 235H344M446 235H632M734 235H920" stroke="#a8b0aa" stroke-opacity="0.5" stroke-width="2"/>
+  <path d="M332 227L344 235L332 243M620 227L632 235L620 243M908 227L920 235L908 243" fill="none" stroke="#d5913d" stroke-width="2"/>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <g transform="translate(56 174)">
+      <circle cx="62" cy="62" r="62" fill="#eef2f0"/>
+      <text x="62" y="54" text-anchor="middle" fill="#202522" font-size="34" font-weight="750">173</text>
+      <text x="62" y="82" text-anchor="middle" fill="#66746b" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16">CM</text>
+      <text x="0" y="168" fill="#f9fbfa" font-size="22" font-weight="700">ENTER HEIGHT</text>
+      <text x="0" y="202" fill="#a8b0aa" font-size="18">One simple input.</text>
+      <text x="0" y="228" fill="#a8b0aa" font-size="18">No false precision.</text>
+    </g>
+
+    <g transform="translate(344 174)">
+      <rect width="102" height="124" rx="18" fill="#eef2f0"/>
+      <rect x="18" y="20" width="66" height="8" rx="4" fill="#a8b0aa"/>
+      <text x="18" y="66" fill="#202522" font-size="28" font-weight="750">70</text>
+      <text x="62" y="66" fill="#66746b" font-size="15">cm</text>
+      <path d="M18 88H84" stroke="#d5913d" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="51" cy="88" r="7" fill="#f9fbfa" stroke="#d5913d" stroke-width="3"/>
+      <text x="0" y="168" fill="#f9fbfa" font-size="22" font-weight="700">START WITH A RANGE</text>
+      <text x="0" y="202" fill="#a8b0aa" font-size="18">Source coverage and trend</text>
+      <text x="0" y="228" fill="#a8b0aa" font-size="18">estimates stay separate.</text>
+    </g>
+
+    <g transform="translate(632 174)">
+      <rect width="102" height="124" rx="18" fill="#eef2f0"/>
+      <path d="M20 92H82M31 92V58H71V92M42 58V38H60V58" fill="none" stroke="#3d5145" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="51" cy="28" r="9" fill="#d5913d"/>
+      <text x="0" y="168" fill="#f9fbfa" font-size="22" font-weight="700">INSPECT IN 3D</text>
+      <text x="0" y="202" fill="#a8b0aa" font-size="18">Switch posture and</text>
+      <text x="0" y="228" fill="#a8b0aa" font-size="18">key dimensions.</text>
+    </g>
+
+    <g transform="translate(920 174)">
+      <rect width="102" height="124" rx="18" fill="#eef2f0"/>
+      <path d="M28 63L45 80L77 42" fill="none" stroke="#3d5145" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="51" cy="63" r="37" fill="none" stroke="#d5913d" stroke-width="4"/>
+      <text x="0" y="168" fill="#f9fbfa" font-size="22" font-weight="700">CALIBRATE</text>
+      <text x="0" y="202" fill="#a8b0aa" font-size="18">Check feet, elbows,</text>
+      <text x="0" y="228" fill="#a8b0aa" font-size="18">and natural eye line.</text>
+    </g>
+  </g>
+</svg>

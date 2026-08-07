@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="1200" height="520" viewBox="0 0 1200 520"
+     role="img" aria-labelledby="title desc">
+  <title id="title">Workstation Fit</title>
+  <desc id="desc">Enter your height, get evidence-backed workstation starting ranges, and calibrate them against your body in a 3D scene.</desc>
+
+  <defs>
+    <clipPath id="product-frame">
+      <rect x="548" y="32" width="620" height="456" rx="22"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1200" height="520" rx="28" fill="#eef2f0"/>
+  <path d="M0 398H1200" stroke="#202522" stroke-opacity="0.08"/>
+  <path d="M516 0V520" stroke="#202522" stroke-opacity="0.08"/>
+
+  <g id="title-block" transform="translate(56 48)">
+    <g>
+      <circle cx="11" cy="11" r="10" fill="none" stroke="#202522" stroke-width="1.5"/>
+      <circle cx="11" cy="11" r="3.5" fill="#d5913d"/>
+      <text x="34" y="17" fill="#66746b" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" letter-spacing="2">EVIDENCE-FIRST ERGONOMICS</text>
+    </g>
+
+    <text x="0" y="102" fill="#202522" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="56" font-weight="760" letter-spacing="-2.5">WORKSTATION</text>
+    <text x="0" y="169" fill="#202522" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="76" font-weight="760" letter-spacing="-3">FIT.</text>
+
+    <text x="0" y="215" fill="#202522" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="23" font-weight="680">Start with height.</text>
+    <text x="0" y="244" fill="#202522" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="23" font-weight="680">Fit the workstation.</text>
+    <text x="0" y="286" fill="#66746b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="19">
+      <tspan x="0" dy="0">Evidence-backed starting ranges,</tspan>
+      <tspan x="0" dy="29">calibrated against your body.</tspan>
+    </text>
+
+    <g transform="translate(0 352)">
+      <rect width="176" height="42" rx="21" fill="#202522"/>
+      <text x="88" y="27" text-anchor="middle" fill="#f9fbfa" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="650">LOCAL-ONLY DATA</text>
+      <rect x="188" width="194" height="42" rx="21" fill="#f9fbfa" stroke="#202522" stroke-opacity="0.15"/>
+      <text x="285" y="27" text-anchor="middle" fill="#3d5145" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" font-weight="650">TRACEABLE SOURCES</text>
+    </g>
+  </g>
+
+  <g id="height-ruler" transform="translate(492 88)">
+    <line x1="0" y1="0" x2="0" y2="344" stroke="#66746b" stroke-opacity="0.55" stroke-width="2"/>
+    <line x1="-14" y1="0" x2="14" y2="0" stroke="#66746b" stroke-width="2"/>
+    <line x1="-9" y1="86" x2="9" y2="86" stroke="#66746b" stroke-opacity="0.55"/>
+    <line x1="-18" y1="161" x2="18" y2="161" stroke="#d5913d" stroke-width="4"/>
+    <circle cx="0" cy="161" r="7" fill="#f9fbfa" stroke="#d5913d" stroke-width="4"/>
+    <line x1="-9" y1="258" x2="9" y2="258" stroke="#66746b" stroke-opacity="0.55"/>
+    <line x1="-14" y1="344" x2="14" y2="344" stroke="#66746b" stroke-width="2"/>
+    <text x="-22" y="7" text-anchor="end" fill="#66746b" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16">145</text>
+    <text x="-22" y="168" text-anchor="end" fill="#9a601f" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" font-weight="700">173</text>
+    <text x="-22" y="350" text-anchor="end" fill="#66746b" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16">205</text>
+    <text x="0" y="382" text-anchor="middle" fill="#66746b" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" letter-spacing="1.2">CM</text>
+  </g>
+
+  <g id="product-proof" clip-path="url(#product-frame)">
+    <rect x="548" y="32" width="620" height="456" fill="#f9fbfa"/>
+    <image x="548" y="32" width="620" height="456" preserveAspectRatio="xMidYMid slice" href="hero-product.png" xlink:href="hero-product.png"/>
+    <rect x="548" y="32" width="620" height="456" fill="none" stroke="#202522" stroke-opacity="0.12" stroke-width="2" rx="22"/>
+  </g>
+
+  <g id="proof-label" transform="translate(892 432)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <rect width="246" height="40" rx="20" fill="#202522" fill-opacity="0.92"/>
+    <circle cx="22" cy="20" r="4" fill="#d5913d"/>
+    <text x="38" y="26" fill="#f9fbfa" font-size="15" font-weight="650">LIVE 3D CALIBRATION</text>
+  </g>
+</svg>

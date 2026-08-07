@@ -1,4 +1,10 @@
 <p align="center">
+  <strong>简体中文</strong>
+  ·
+  <a href="./README.en.md">English</a>
+</p>
+
+<p align="center">
   <img src="./assets/readme/hero.png" width="100%" alt="合身工位：输入身高，获得有出处的桌椅与显示器设置起始范围，并通过三维场景完成身体校准">
 </p>
 
