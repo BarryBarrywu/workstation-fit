@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-labelledby="title desc">
-  <title id="title">合身工位的计算与校准流程</title>
+  <title id="title">就位的计算与校准流程</title>
   <desc id="desc">输入身高后，工具生成有证据状态的起始范围，再用三维场景检查椅子、桌面和显示器，最后按身体感受完成校准。</desc>
 
   <rect width="1200" height="430" rx="28" fill="#202522"/>

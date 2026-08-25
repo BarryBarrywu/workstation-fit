@@ -2,7 +2,7 @@
      xmlns:xlink="http://www.w3.org/1999/xlink"
      width="1200" height="520" viewBox="0 0 1200 520"
      role="img" aria-labelledby="title desc">
-  <title id="title">合身工位</title>
+  <title id="title">就位</title>
   <desc id="desc">输入身高，获得有出处的桌椅与显示器设置起始范围，并通过三维场景进行身体校准。</desc>
 
   <defs>
@@ -22,7 +22,7 @@
       <text x="34" y="17" fill="#66746b" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="2.4">WORKSTATION FIT</text>
     </g>
 
-    <text x="0" y="112" fill="#202522" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="74" font-weight="750" letter-spacing="-3">合身工位</text>
+    <text x="0" y="112" fill="#202522" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="74" font-weight="750" letter-spacing="-3">就位</text>
     <text x="0" y="164" fill="#202522" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="27" font-weight="650">按身高，调桌椅。</text>
 
     <text x="0" y="220" fill="#66746b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="21">
