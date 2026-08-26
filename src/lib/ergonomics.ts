@@ -5,6 +5,9 @@ export type EvidenceKey = 'seat' | 'sittingDesk' | 'standingDesk' | 'sittingMoni
 export type EvidenceStatus = 'reference' | 'trend' | 'guidance';
 export type EvidenceClass = 'national-standard' | 'occupational-health' | 'professional-guidance' | 'research';
 
+const siteEdition = import.meta.env.PUBLIC_SITE_EDITION;
+const evidenceLinksEnabled = siteEdition !== 'toy' && siteEdition !== 'xhs';
+
 export type Range = {
   min: number;
   max: number;
@@ -52,7 +55,7 @@ type ModelNode = {
 const gbStandard: EvidenceSource = {
   organization: '国家市场监督管理总局、国家标准化管理委员会',
   title: 'GB/T 10000—2023《中国成年人人体尺寸》',
-  url: 'https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=B19DCCA575D9406856ABF87A511EE11F',
+  url: evidenceLinksEnabled ? 'https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=B19DCCA575D9406856ABF87A511EE11F' : '',
   evidenceClass: 'national-standard',
   role: '提供中国 18–70 岁成人的身高、坐姿腘高、坐姿眼高与肘高等统计数据。',
   versionOrPublished: 'GB/T 10000—2023；2023-08-06 发布',
@@ -62,7 +65,7 @@ const gbStandard: EvidenceSource = {
 const cnisSurvey: EvidenceSource = {
   organization: '中国标准化研究院',
   title: '中国成年人人体建模及应用关键技术标准研究成果介绍',
-  url: 'https://www.cnis.ac.cn/ynbm/jcbzhyjs/kydt/202212/t20221222_54389.html',
+  url: evidenceLinksEnabled ? 'https://www.cnis.ac.cn/ynbm/jcbzhyjs/kydt/202212/t20221222_54389.html' : '',
   evidenceClass: 'research',
   role: '说明新版中国成人尺寸调查与工作空间回归模型的来源背景。',
   versionOrPublished: '2022-12-22 发布',
@@ -72,7 +75,7 @@ const cnisSurvey: EvidenceSource = {
 const cornellChair: EvidenceSource = {
   organization: 'Cornell University Ergonomics Web',
   title: 'Choosing an ergonomic chair',
-  url: 'https://ergo.human.cornell.edu/AHTutorials/chairch.html',
+  url: evidenceLinksEnabled ? 'https://ergo.human.cornell.edu/AHTutorials/chairch.html' : '',
   evidenceClass: 'professional-guidance',
   role: '用于检查坐姿：双脚平稳着地，膝盖接近或略高于椅面。',
   versionOrPublished: '网页未标注版本或发布日期',
@@ -82,7 +85,7 @@ const cornellChair: EvidenceSource = {
 const mayoOffice: EvidenceSource = {
   organization: 'Mayo Clinic',
   title: 'Office ergonomics: Your how-to guide',
-  url: 'https://www.mayoclinic.org/healthy-lifestyle/adult-health/in-depth/office-ergonomics/art-20046169',
+  url: evidenceLinksEnabled ? 'https://www.mayoclinic.org/healthy-lifestyle/adult-health/in-depth/office-ergonomics/art-20046169' : '',
   evidenceClass: 'professional-guidance',
   role: '提供桌面高度、屏幕高度与观看距离的身体检查方法。',
   versionOrPublished: '2023-05-25 发布',
@@ -92,7 +95,7 @@ const mayoOffice: EvidenceSource = {
 const oshaMonitor: EvidenceSource = {
   organization: 'U.S. Occupational Safety and Health Administration',
   title: 'Computer Workstations: Monitors',
-  url: 'https://www.osha.gov/etools/computer-workstations/components/monitors',
+  url: evidenceLinksEnabled ? 'https://www.osha.gov/etools/computer-workstations/components/monitors' : '',
   evidenceClass: 'occupational-health',
   role: '支持“屏幕顶部不高于眼睛”的设置原则，以及 50–100 cm 的一般观看距离。',
   versionOrPublished: '网页未标注版本或发布日期',
@@ -102,7 +105,7 @@ const oshaMonitor: EvidenceSource = {
 const ccohsMonitor: EvidenceSource = {
   organization: 'Canadian Centre for Occupational Health and Safety',
   title: 'Office Ergonomics: Positioning the Monitor',
-  url: 'https://www.ccohs.ca/oshanswers/ergonomics/office/monitor_positioning.html',
+  url: evidenceLinksEnabled ? 'https://www.ccohs.ca/oshanswers/ergonomics/office/monitor_positioning.html' : '',
   evidenceClass: 'occupational-health',
   role: '提供 40–74 cm 与自然下视角的另一组专业指南，并强调按个人情况调整。',
   versionOrPublished: '2022-11-29 修订；2025-07-21 确认为当前版本',

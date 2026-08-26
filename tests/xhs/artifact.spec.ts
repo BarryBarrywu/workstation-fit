@@ -58,6 +58,7 @@ describe('Xiaohongshu upload artifact', () => {
     expect(readFileSync(join(unpackedPath, 'assets/main.js'), 'utf8')).not.toMatch(/(^|[;}])\s*(?:import|export)\s/m);
     expect(source).not.toMatch(/\btype=["']module["']|\beval\s*\(|new\s+Function\s*\(|WebAssembly|\bfetch\s*\(|XMLHttpRequest|new\s+(?:Shared)?Worker\s*\(|serviceWorker|<iframe|<object/i);
     expect(source).not.toMatch(/navigator\.(?:mediaDevices|geolocation|clipboard)|requestFullscreen|window\.(?:open|prompt)\s*\(/i);
+    expect(source).not.toMatch(/openstd\.samr|cnis\.ac\.cn|cornell\.edu|mayoclinic\.org|osha\.gov|ccohs\.ca/);
 
     const references = [...html.matchAll(/(?:src|href)="([^"]+)"/g)].map((match) => match[1]);
     expect(references.every((reference) => reference.startsWith('./') && !reference.includes('..'))).toBe(true);

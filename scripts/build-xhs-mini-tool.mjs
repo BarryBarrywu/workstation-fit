@@ -41,6 +41,9 @@ await build({
   format: 'iife',
   platform: 'browser',
   target: ['ios15', 'chrome100'],
+  define: {
+    'import.meta.env.PUBLIC_SITE_EDITION': JSON.stringify('xhs'),
+  },
   minify: true,
   legalComments: 'none',
 });

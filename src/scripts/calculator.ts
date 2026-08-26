@@ -48,6 +48,7 @@ const required = <T extends Element>(selector: string): T => {
 
 const storageKey = 'workstation-fit:profile:v2';
 const legacyStorageKey = 'workstation-fit:profile:v1';
+const localDataLocation = import.meta.env.PUBLIC_SITE_EDITION === 'toy' ? '当前平台容器' : '当前浏览器';
 const heightNumber = required<HTMLInputElement>('#height-number');
 const heightRange = required<HTMLInputElement>('#height-range');
 const resultContainer = required<HTMLDivElement>('#results');
@@ -191,7 +192,7 @@ function renderCalibration() {
   const state = profile.calibration[posture];
   const postureLabel = posture === 'sitting' ? '坐姿' : '站姿';
   calibrationSummary.textContent = state.status === 'complete'
-    ? `${postureLabel}检查已完成，进度保存在当前浏览器中。`
+    ? `${postureLabel}检查已完成，进度保存在${localDataLocation}中。`
     : state.status === 'reconfirm'
       ? `身高变了，请重新检查${postureLabel}的身体位置。`
       : posture === 'sitting'
