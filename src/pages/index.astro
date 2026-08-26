@@ -12,6 +12,10 @@ const siteOrigin = isChinaDeployment ? 'https://fit.barrybarrywu.cn' : 'https://
 const shareImageUrl = `${siteOrigin}/brand/jiuwei-character.png`;
 const iconPath = isToyEdition ? './icon.png' : '/icon.png';
 const pageTitle = isToyEdition ? '就位｜桌椅与显示器高度计算器' : '就位｜找到适合你的桌椅与显示器高度';
+const pageDescription = isToyEdition
+  ? '输入身高，查看有出处的椅面、坐站桌与显示器设置建议。所有个人数据都只保存在当前平台容器中。'
+  : '输入身高，查看有出处的椅面、坐站桌与显示器设置建议。所有个人数据都只保存在浏览器中。';
+const localDataLocation = isToyEdition ? '当前平台容器' : '当前浏览器';
 const classLabels = {
   'national-standard': '国家标准',
   'occupational-health': '职业健康指南',
@@ -25,7 +29,7 @@ const classLabels = {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="description" content="输入身高，查看有出处的椅面、坐站桌与显示器设置建议。所有个人数据都只保存在浏览器中。" />
+    <meta name="description" content={pageDescription} />
     <link rel="icon" type="image/png" sizes="512x512" href={iconPath} />
     <link rel="apple-touch-icon" href={iconPath} />
     <meta property="og:type" content="website" />
@@ -238,7 +242,7 @@ const classLabels = {
       </section>}
 
       <section id="independent-footer" class="independent-footer" aria-label="独立工具说明">
-        <p>就位由 Barry 独立设计并开源。你的数据只保存在当前浏览器中，不会上传。</p>
+        <p>就位由 Barry 独立设计并开源。你的数据只保存在{localDataLocation}中，不会上传。</p>
         <div class="footer-legal">
           <p>这些结果只作为设置工位的起点，不能替代专业人体工学评估或医疗建议。</p>
           {isChinaDeployment && icpNumber && (

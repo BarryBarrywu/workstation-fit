@@ -56,5 +56,7 @@ describe('platform build isolation', () => {
     expect(chinaHtml).toContain('id="episode"');
 
     runBuild('build');
+    expect(snapshot(websiteArtifact)).toEqual(websiteSnapshot);
+    expect(readFileSync(join(websiteArtifact, 'index.html'), 'utf8')).not.toContain('测试备案号');
   }, 60_000);
 });

@@ -67,16 +67,27 @@ test('keeps calculator, scene selection, calibration, evidence, and local profil
   await page.getByRole('button', { name: '已调整，下一步' }).click();
   await page.getByRole('button', { name: '完成检查' }).click();
   await expect(page.getByRole('button', { name: '重新检查站姿' })).toBeVisible();
+  await expect(page.getByText('站姿检查已完成，进度保存在当前平台容器中。')).toBeVisible();
 
   await page.getByRole('button', { name: '下一项' }).click();
   await expect(page.locator('#evidence-tab-sittingDesk')).toHaveAttribute('aria-selected', 'true');
   await expect(page.locator('#evidence-sittingDesk .source-links a').first()).toHaveAttribute('target', '_blank');
+  await page.locator('#evidence-tab-sittingDesk').press('ArrowRight');
+  await expect(page.locator('#evidence-tab-standingDesk')).toHaveAttribute('aria-selected', 'true');
 
   await page.reload();
   await expect(page.getByLabel('身高，厘米')).toHaveValue('180');
-  const profile = await page.evaluate(() => JSON.parse(localStorage.getItem('workstation-fit:profile:v2')!));
-  expect(profile.height).toBe(180);
+  let profile = await page.evaluate(() => JSON.parse(localStorage.getItem('workstation-fit:profile:v2')!));
   expect(profile.calibration.standing.status).toBe('complete');
+
+  await page.locator('#height-number').fill('181');
+  await page.locator('#height-number').press('Enter');
+  await page.getByRole('button', { name: '站着' }).click();
+  await expect(page.getByText('身高变了，请重新检查站姿的身体位置。')).toBeVisible();
+  await page.reload();
+  profile = await page.evaluate(() => JSON.parse(localStorage.getItem('workstation-fit:profile:v2')!));
+  expect(profile.height).toBe(181);
+  expect(profile.calibration.standing.status).toBe('reconfirm');
   expect(profile).not.toHaveProperty('offsets');
   expect(externalRequests).toEqual([]);
 });
@@ -96,4 +107,8 @@ test('keeps onboarding replayable and calculator usable without WebGL', async ({
   await page.getByRole('button', { name: '稍后继续' }).click();
   await page.getByRole('button', { name: '使用说明' }).click();
   await expect(page.getByRole('dialog', { name: '先输入身高' })).toBeVisible();
+  const animationDuration = await page.locator('.evidence-card.is-entering').evaluate((element) => (
+    Number.parseFloat(getComputedStyle(element).animationDuration)
+  ));
+  expect(animationDuration).toBeLessThan(0.001);
 });
