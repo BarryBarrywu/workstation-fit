@@ -5,8 +5,8 @@ Workstation Fit turns a person's measurements into adjustable workstation starti
 ## Language
 
 **Chinese product name**:
-`就位` is the shared Chinese name for the website and Bilibili Toy edition. Platform names and implementation variants are not appended to the user-facing brand.
-_Avoid_: 就位 Toy 版, 就位网页版, Toy Lite
+`就位` is the shared Chinese name for the website, Bilibili Toy edition, and Xiaohongshu mini tool. Platform names and implementation variants are not appended to the user-facing brand.
+_Avoid_: 就位 Toy 版, 就位小工具版, 就位网页版, Toy Lite, XHS Lite
 
 **Target population**:
 Chinese adult office users using the tool as a workstation setup starting point. Chinese anthropometric data is preferred; evidence from other populations must name that limitation. Children, wheelchair users, and people requiring clinical or individualized assessment are outside the default model.
@@ -16,6 +16,14 @@ _Avoid_: Universal human model, medical population, silently mixing populations
 The V1 body input model uses height alone to create broad fit estimates, then relies on posture calibration for individual differences in leg, torso, arm, and eye proportions. Sex and additional body measurements are not required inputs.
 _Avoid_: Claiming personal precision from height, mandatory body survey
 
+**Confirmed height**:
+A height value the user has actively entered or confirmed in the Xiaohongshu mini tool. That tool shows no personal fit estimate before first confirmation, while returning users may resume from its locally saved confirmed height; this term does not change the website's independent first-visit behavior.
+_Avoid_: Default personal height, assumed height, standard height
+
+**Supported height range**:
+The `145–205 cm` interval in which the product accepts a confirmed height and generates fit estimates. Inputs outside this range remain visible for correction and do not produce clamped results; this range is distinct from each evidence chain's source coverage.
+_Avoid_: Source coverage, silently clamped height, recommended population range
+
 **Fit estimate**:
 A height-derived suggested starting point paired with a reference range that must be confirmed against the person's body.
 _Avoid_: Ideal height, perfect height, optimal value, medical recommendation
@@ -24,9 +32,17 @@ _Avoid_: Ideal height, perfect height, optimal value, medical recommendation
 The floor-to-screen-top fit estimate used to compare the display with the user's natural eye line. Screen-bottom height is not a product metric because it depends on the physical display size.
 _Avoid_: Screen-bottom height, monitor stand height, exact eye height
 
+**Monitor viewing distance**:
+The `50–75 cm` screen-check range presented by the mini tool in both sitting and standing calibration, independent of height and posture. It is general guidance rather than a personalized fit estimate or a posture-specific result card, and does not require changing another platform's presentation.
+_Avoid_: Standing-only distance, calculated viewing distance, exact target distance
+
 **Evidence chain**:
 The traceable connection from one fit estimate to its original sources, the project's calculation or transformation, the source coverage, and the remaining limitations. Every displayed measurement must have its own evidence chain.
 _Avoid_: General bibliography, related reading presented as direct support
+
+**Condensed evidence chain**:
+The mini tool edition's local summary of a fit estimate's source name, source coverage, project transformation, and primary limitation. It preserves evidence status without reproducing the website's full source archive or relying on external links.
+_Avoid_: Authority badge, source-free summary, bibliography link
 
 **Evidence status**:
 The visible distinction between a fit estimate inside its sources' stated coverage and a trend estimate outside that coverage. Trend estimates remain available across the fit envelope but must disclose their source boundary and direct the user into calibration.
@@ -45,7 +61,7 @@ The locally saved physical-check progress for one posture. Sitting checks cover 
 _Avoid_: Numeric offset, one shared sitting-and-standing state, mandatory input
 
 **Local fit profile**:
-The height, onboarding state, and posture-check progress saved only in the current platform container, with no account or server record. Website and Bilibili Toy profiles exist independently, are never synchronized or transferred, and may disappear when the platform clears local storage; changing the saved height marks each completed posture check for reconfirmation.
+The height, onboarding state, and posture-check progress saved only in the current platform container, with no account or server record. Website, Bilibili Toy, and Xiaohongshu mini tool profiles exist independently, are never synchronized or transferred, and may disappear when the platform clears local storage; changing the saved height marks each completed posture check for reconfirmation.
 _Avoid_: Numeric offsets, user account, cloud profile, cross-platform profile, anonymous tracking
 
 **Bilibili Toy edition**:
@@ -56,6 +72,22 @@ _Avoid_: Website redirect, editorial mirror, separate Toy product, Toy Lite
 An uploaded Bilibili-hosted build used to verify the Toy edition before review submission. It is not an approved or published Toy, and moving from preview to review always requires a separate explicit confirmation.
 _Avoid_: Published Toy, review submission, release
 
+**Local privacy notice**:
+The mini tool's clear statement that confirmed height and calibration progress stay in its isolated local storage, are not uploaded, and may be removed by the platform. It appears before the first confirmed height without requiring a separate consent flow for data that never leaves the container.
+_Avoid_: Cloud privacy policy, hidden storage disclosure, permanent-storage promise, data collection claim
+
+**Xiaohongshu mini tool edition**:
+A platform-specific tool with its own entry, local state, version, and release lifecycle. It takes a user from height input to fit estimates and posture calibration, with sitting and standing available as independently completable postures; it is not a mirror of the full website or a replacement for its complete evidence archive and editorial content.
+_Avoid_: Website mirror, embedded website, feature-parity build, XHS Lite
+
+**Mini tool completion**:
+The state reached when the user finishes every physical check for the selected posture. Displaying fit estimates or opening a sharing flow does not constitute completion.
+_Avoid_: Result generated, page viewed, note published
+
+**Mini tool fit scene**:
+The original fixed-camera 3D robot and workstation scene that updates to explain the selected fit estimate and physical check. It is instructional rather than freely rotatable or photorealistic, and retains a static fallback when WebGL is unavailable.
+_Avoid_: Free rotation, static infographic, protected character design, product rendering
+
 **Related episode entry**:
 One secondary editorial module after the complete evidence chains, containing a shared cover, title, summary, and multiple platform destinations for the related episode. It does not frame the independent calculator as sponsored; a destination without a published URL is visibly pending rather than linked to a placeholder.
 _Avoid_: Primary call to action, four duplicate episode cards, empty link, sponsor branding in the calculator
@@ -63,6 +95,10 @@ _Avoid_: Primary call to action, four duplicate episode cards, empty link, spons
 **Onboarding**:
 A skippable, replayable first-visit interface tour that teaches height input, posture switching, and 3D scene controls without blocking calculator use or changing and saving fit estimates.
 _Avoid_: Calibration, required setup
+
+**Inline guidance**:
+Brief instructions shown beside the mini tool task at the moment they are needed, without a first-visit tour or blocking overlay. Calibration steps remain the detailed physical guidance.
+_Avoid_: Onboarding modal, walkthrough, required tutorial
 
 **Visual rig asset**:
 The GLB containing the robot's original meshes, materials, and named articulated hierarchy; it does not decide fitted poses.
