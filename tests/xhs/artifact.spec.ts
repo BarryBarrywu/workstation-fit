@@ -3,8 +3,9 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { dirname, extname, join, normalize, relative, resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import toolMetadata from '../../apps/xhs-mini-tool/tool-metadata.json';
 
-const artifactPath = resolve('dist/xhs-mini-tool/jiuwei-xhs-mini-tool-1.0.0.zip');
+const artifactPath = resolve(`dist/xhs-mini-tool/jiuwei-xhs-mini-tool-${toolMetadata.toolVersion}.zip`);
 const allowedExtensions = new Set(['.html', '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.woff', '.woff2', '.json']);
 let unpackedPath: string;
 
@@ -42,6 +43,7 @@ describe('Xiaohongshu upload artifact', () => {
     expect(metadata).toEqual({
       name: '就位',
       description: '按身高，调桌椅与显示器',
+      details: expect.stringMatching(/145–205 cm.*来源.*本地.*不是医疗建议/),
       version: '1.0.0',
       permissions: [],
       fitModelVersion: '2026.08.02',

@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#f4f2ec" />
     <title>就位</title>
     <link rel="stylesheet" href="./assets/style.css" />
@@ -20,7 +20,7 @@
         <form id="height-form" novalidate>
           <label for="height-input">身高（厘米）</label>
           <div class="height-control">
-            <input id="height-input" name="height" type="number" inputmode="decimal" min="145" max="205" step="0.1" autocomplete="off" placeholder="例如 173" />
+            <input id="height-input" name="height" type="text" inputmode="decimal" autocomplete="off" placeholder="例如 173" />
             <span aria-hidden="true">cm</span>
           </div>
           <p id="height-error" class="field-error" role="alert"></p>
@@ -32,7 +32,7 @@
         </aside>
       </section>
       <div id="fit-app" aria-live="polite"></div>
-      <footer class="build-meta">工具 1.0.0 · Fit model 2026.08.02 · 来源核验 2026-08-02<br />这是调节起点，不是医疗建议。</footer>
+      <footer id="build-meta" class="build-meta"></footer>
     </main>
     <script src="./assets/main.js"></script>
   </body>

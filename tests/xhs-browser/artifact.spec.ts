@@ -12,6 +12,11 @@ test('requires a valid confirmed height before showing personal fit estimates', 
   await expect(page.locator('[data-testid="fit-results"]')).toHaveCount(0);
 
   const height = page.getByLabel('身高（厘米）');
+  await height.fill('abc');
+  await page.getByRole('button', { name: '查看调节起点' }).click();
+  await expect(height).toHaveValue('abc');
+  await expect(page.getByText('请输入 145–205 cm 之间的身高')).toBeVisible();
+
   await height.fill('140');
   await page.getByRole('button', { name: '查看调节起点' }).click();
   await expect(height).toHaveValue('140');
@@ -39,11 +44,19 @@ test('shows condensed evidence status and updates the 2D diagram', async ({ page
 
   const diagram = page.getByTestId('fit-diagram');
   await expect(diagram).toHaveAttribute('data-posture', 'sitting');
+  const tallSeatY = await diagram.getAttribute('data-seat-y');
+  const tallHeadY = await diagram.getAttribute('data-head-y');
   await page.getByRole('button').filter({ hasText: '屏幕顶部' }).click();
   await expect(diagram).toHaveAttribute('data-selected', 'sittingMonitorTop');
-  await page.getByRole('tab', { name: /站姿/ }).click();
+  await page.getByRole('button', { name: /站姿/ }).click();
   await expect(diagram).toHaveAttribute('data-posture', 'standing');
   await expect(page.getByRole('button', { name: /椅面高度/ })).toHaveCount(0);
+
+  await page.getByLabel('身高（厘米）').fill('145');
+  await page.getByRole('button', { name: '查看调节起点' }).click();
+  await page.getByRole('button', { name: /坐姿/ }).click();
+  await expect(diagram).not.toHaveAttribute('data-seat-y', tallSeatY!);
+  await expect(diagram).not.toHaveAttribute('data-head-y', tallHeadY!);
 });
 
 test('completes sitting and standing independently, restores them, then requests reconfirmation', async ({ page }) => {
@@ -59,7 +72,7 @@ test('completes sitting and standing independently, restores them, then requests
   await page.getByRole('button', { name: '完成当前姿势' }).click();
   await expect(page.getByText('坐姿检查已完成')).toBeVisible();
 
-  await page.getByRole('tab', { name: '站姿' }).click();
+  await page.getByRole('button', { name: '站姿' }).click();
   await expect(page.getByRole('button', { name: '开始站姿检查' })).toBeVisible();
   await page.getByRole('button', { name: '开始站姿检查' }).click();
   await page.getByRole('button', { name: '已调整，下一步' }).click();
@@ -70,20 +83,34 @@ test('completes sitting and standing independently, restores them, then requests
   await page.reload();
   await expect(page.getByLabel('身高（厘米）')).toHaveValue('173');
   await expect(page.getByText('站姿检查已完成')).toBeVisible();
-  await page.getByRole('tab', { name: /坐姿 · 已完成/ }).click();
+  await page.getByRole('button', { name: /坐姿 · 已完成/ }).click();
   await expect(page.getByText('坐姿检查已完成')).toBeVisible();
 
   await page.getByLabel('身高（厘米）').fill('180');
   await page.getByRole('button', { name: '查看调节起点' }).click();
   await expect(page.getByText('身高变了，请重新确认坐姿的身体位置。')).toBeVisible();
-  await expect(page.getByRole('tab', { name: /站姿 · 待确认/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /站姿 · 待确认/ })).toBeVisible();
 });
 
-test('returns damaged local state to the unconfirmed first-use screen', async ({ page }) => {
+test('returns damaged or internally inconsistent local state to the unconfirmed first-use screen', async ({ page }) => {
   await page.goto(artifactUrl);
   await page.evaluate(() => localStorage.setItem('jiuwei:xhs-mini-tool:profile:v1', '{broken'));
   await page.reload();
 
+  await expect(page.getByLabel('身高（厘米）')).toHaveValue('');
+  await expect(page.locator('[data-testid="fit-results"]')).toHaveCount(0);
+
+  await page.evaluate(() => localStorage.setItem('jiuwei:xhs-mini-tool:profile:v1', JSON.stringify({
+    version: 1,
+    confirmedHeight: 173,
+    posture: 'sitting',
+    selected: 'sittingDesk',
+    calibration: {
+      sitting: { step: 0, status: 'complete' },
+      standing: { step: 0, status: 'not-started' },
+    },
+  })));
+  await page.reload();
   await expect(page.getByLabel('身高（厘米）')).toHaveValue('');
   await expect(page.locator('[data-testid="fit-results"]')).toHaveCount(0);
 });

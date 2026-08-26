@@ -10,6 +10,11 @@ export type MiniProfile = {
 };
 
 export const MINI_PROFILE_KEY = 'jiuwei:xhs-mini-tool:profile:v1';
+export const POSTURE_RESULTS: Record<Posture, ResultKey[]> = {
+  sitting: ['seat', 'sittingDesk', 'sittingMonitorTop'],
+  standing: ['standingDesk', 'standingMonitorTop'],
+};
+export const DEFAULT_SELECTION: Record<Posture, ResultKey> = { sitting: 'sittingDesk', standing: 'standingDesk' };
 
 export function createMiniProfile(confirmedHeight: number): MiniProfile {
   return {
@@ -49,13 +54,16 @@ export function parseMiniProfile(serialized: string | null): MiniProfile | null 
 function isCalibration(value: unknown, maxStep: number): value is MiniProfile['calibration']['sitting'] {
   if (!value || typeof value !== 'object') return false;
   const item = value as { step?: unknown; status?: unknown };
-  return Number.isInteger(item.step) && Number(item.step) >= 0 && Number(item.step) <= maxStep
-    && ['not-started', 'in-progress', 'complete', 'reconfirm'].includes(String(item.status));
+  const step = Number(item.step);
+  const status = String(item.status);
+  if (!Number.isInteger(item.step) || step < 0 || step > maxStep) return false;
+  if (status === 'not-started') return step === 0;
+  if (status === 'in-progress') return step < maxStep;
+  return (status === 'complete' || status === 'reconfirm') && step === maxStep;
 }
 
 function validSelection(value: unknown, posture: Posture): ResultKey {
-  const allowed: ResultKey[] = posture === 'sitting' ? ['seat', 'sittingDesk', 'sittingMonitorTop'] : ['standingDesk', 'standingMonitorTop'];
-  return allowed.includes(value as ResultKey) ? value as ResultKey : posture === 'sitting' ? 'sittingDesk' : 'standingDesk';
+  return POSTURE_RESULTS[posture].includes(value as ResultKey) ? value as ResultKey : DEFAULT_SELECTION[posture];
 }
 
 export function updateMiniHeight(profile: MiniProfile, confirmedHeight: number): MiniProfile {

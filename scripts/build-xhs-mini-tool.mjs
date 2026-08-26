@@ -9,7 +9,8 @@ const source = resolve(root, 'apps/xhs-mini-tool');
 const outputRoot = resolve(root, 'dist/xhs-mini-tool');
 const packageRoot = resolve(outputRoot, 'package');
 const assetsRoot = resolve(packageRoot, 'assets');
-const artifact = resolve(outputRoot, 'jiuwei-xhs-mini-tool-1.0.0.zip');
+const toolMetadata = JSON.parse(readFileSync(resolve(source, 'tool-metadata.json'), 'utf8'));
+const artifact = resolve(outputRoot, `jiuwei-xhs-mini-tool-${toolMetadata.toolVersion}.zip`);
 
 rmSync(outputRoot, { recursive: true, force: true });
 mkdirSync(assetsRoot, { recursive: true });
@@ -17,10 +18,11 @@ copyFileSync(resolve(source, 'index.html'), resolve(packageRoot, 'index.html'));
 copyFileSync(resolve(source, 'styles.css'), resolve(assetsRoot, 'style.css'));
 const modelMetadata = JSON.parse(readFileSync(resolve(root, 'src/lib/fit-model-metadata.json'), 'utf8'));
 writeFileSync(resolve(packageRoot, 'tool-info.json'), `${JSON.stringify({
-  name: '就位',
-  description: '按身高，调桌椅与显示器',
-  version: '1.0.0',
-  permissions: [],
+  name: toolMetadata.name,
+  description: toolMetadata.description,
+  details: toolMetadata.details,
+  version: toolMetadata.toolVersion,
+  permissions: toolMetadata.permissions,
   ...modelMetadata,
 }, null, 2)}\n`);
 copyFileSync(resolve(root, 'public/icon.png'), resolve(assetsRoot, 'icon.png'));
