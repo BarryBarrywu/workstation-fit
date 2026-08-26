@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "build:xhs": "node scripts/build-xhs-mini-tool.mjs",
+    "test:xhs": "npm run build:xhs && node scripts/unpack-xhs-artifact.mjs && vitest run --config vitest.xhs.config.ts && playwright test --config playwright.xhs.config.ts",
     "preview": "astro preview",
     "test": "vitest run",
     "test:browser": "playwright test"
@@ -16,7 +18,9 @@
   },
   "devDependencies": {
     "@playwright/test": "1.62.1",
+    "@types/node": "24.10.1",
     "@types/three": "0.185.3",
+    "esbuild": "0.28.1",
     "typescript": "7.0.2",
     "vitest": "3.2.7"
   }
