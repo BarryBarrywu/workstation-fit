@@ -48,6 +48,13 @@ export const relatedLinks = [
     meta: '暂未公开',
   },
   {
+    label: 'Codex × ZECTRIX Dashboard',
+    description: '在 ZECTRIX NOTE4 墨水屏上查看 Codex 配额、重置预测与任务状态。',
+    icon: 'github',
+    url: 'https://github.com/BarryBarrywu/codex-zectrix-dashboard',
+    meta: '查看 GitHub',
+  },
+  {
     label: 'Tutti for Mac',
     description: '一款 macOS 菜单栏音频工具，让多台输出设备同时播放，并集中控制设备和每个 App 的音量。',
     icon: 'tutti',
