@@ -163,15 +163,31 @@ test('uses a compact top 3D viewport during mobile calibration', async ({ page }
   await page.getByRole('button', { name: '开始坐姿检查' }).click();
 
   const stage = page.locator('#stage');
-  const box = await stage.boundingBox();
-  expect(box).not.toBeNull();
-  expect(box!.y).toBeLessThan(2);
-  expect(box!.height).toBeGreaterThan(290);
-  expect(box!.height).toBeLessThan(330);
+  const expectFullWidthStage = async () => {
+    const box = await stage.boundingBox();
+    const shellBox = await page.locator('.calculator-shell').boundingBox();
+    expect(box).not.toBeNull();
+    expect(shellBox).not.toBeNull();
+    expect(box!.x).toBeCloseTo(shellBox!.x, 0);
+    expect(box!.width).toBeCloseTo(shellBox!.width, 0);
+    expect(box!.y).toBeLessThan(2);
+    expect(box!.height).toBeGreaterThan(290);
+    expect(box!.height).toBeLessThan(330);
+  };
+
+  await expectFullWidthStage();
   await expect(page.getByRole('heading', { name: '先看脚掌' })).toBeInViewport({ ratio: 1 });
   await expect(page.getByText('先坐到底并靠住椅背', { exact: false })).toBeInViewport({ ratio: 1 });
   await expect(page.getByRole('button', { name: '稍后继续' })).toBeInViewport({ ratio: 1 });
   await expect(page.getByRole('button', { name: '已调整，下一步' })).toBeInViewport({ ratio: 1 });
+
+  await page.getByRole('button', { name: '已调整，下一步' }).click();
+  await page.getByRole('button', { name: '已调整，下一步' }).click();
+  await page.getByRole('button', { name: '完成检查' }).click();
+  await page.getByRole('button', { name: '重新检查坐姿' }).click();
+  await page.getByRole('button', { name: '已调整，下一步' }).click();
+  await expect(page.getByRole('heading', { name: '再看手肘' })).toBeVisible();
+  await expectFullWidthStage();
 });
 
 test('keeps calculation and calibration available without WebGL and with reduced motion', async ({ page }) => {
