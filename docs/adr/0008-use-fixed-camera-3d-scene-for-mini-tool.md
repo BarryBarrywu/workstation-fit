@@ -1,0 +1,3 @@
+# Use a fixed-camera 3D scene for the Xiaohongshu mini tool
+
+The Xiaohongshu mini tool edition will reuse the original website robot and furniture in a fixed-camera 3D scene. A build-time converter retains only the geometry, hierarchy, and material values needed by the mini tool, so the package can use Three.js without GLTFLoader, network requests, WebAssembly, workers, or camera controls. The scene follows the selected posture and fit result but deliberately does not rotate, which keeps the interaction focused and the compressed package below the 2 MB limit. When WebGL is unavailable, the same card shows a fixed-angle image while all measurements and body-check steps remain usable.

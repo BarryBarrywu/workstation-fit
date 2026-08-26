@@ -3,6 +3,7 @@ import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'no
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
+import { writeModelPayload } from './xhs-model-payload.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const source = resolve(root, 'apps/xhs-mini-tool');
@@ -25,7 +26,13 @@ writeFileSync(resolve(packageRoot, 'tool-info.json'), `${JSON.stringify({
   permissions: toolMetadata.permissions,
   ...modelMetadata,
 }, null, 2)}\n`);
-copyFileSync(resolve(root, 'public/icon.png'), resolve(assetsRoot, 'icon.png'));
+copyFileSync(resolve(source, 'assets/icon.png'), resolve(assetsRoot, 'icon.png'));
+copyFileSync(resolve(source, 'assets/scene-fallback.png'), resolve(assetsRoot, 'scene-fallback.png'));
+writeModelPayload({
+  robotPath: resolve(root, 'public/models/workstation-guide.glb'),
+  furniturePath: resolve(root, 'public/models/workstation-furniture.glb'),
+  outputPath: resolve(assetsRoot, 'model-data.js'),
+});
 
 await build({
   entryPoints: [resolve(source, 'main.ts')],

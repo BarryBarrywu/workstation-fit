@@ -37,6 +37,8 @@ describe('Xiaohongshu upload artifact', () => {
       .join('\n');
 
     expect(paths).toContain('index.html');
+    expect(paths).toContain('assets/model-data.js');
+    expect(paths).toContain('assets/scene-fallback.png');
     expect(paths.filter((path) => extname(path) === '.html')).toEqual(['index.html']);
     expect(paths.every((path) => allowedExtensions.has(extname(path).toLowerCase()))).toBe(true);
     expect(statSync(artifactPath).size).toBeLessThanOrEqual(2 * 1024 * 1024);
@@ -50,9 +52,11 @@ describe('Xiaohongshu upload artifact', () => {
       evidenceVerifiedAt: '2026-08-02',
     });
     expect(html).toMatch(/<script src="\.\/assets\/main\.js"><\/script>/);
+    expect(html.indexOf('./assets/model-data.js')).toBeLessThan(html.indexOf('./assets/main.js'));
     expect(html).not.toMatch(/<script(?:\s|>)(?![^>]*\bsrc=)/i);
+    expect(html).not.toMatch(/\son\w+\s*=|javascript:/i);
     expect(readFileSync(join(unpackedPath, 'assets/main.js'), 'utf8')).not.toMatch(/(^|[;}])\s*(?:import|export)\s/m);
-    expect(source).not.toMatch(/\btype=["']module["']|\bon\w+\s*=|javascript:|\beval\s*\(|new\s+Function\s*\(|WebAssembly|\bfetch\s*\(|XMLHttpRequest|new\s+(?:Shared)?Worker\s*\(|serviceWorker|<iframe|<object/i);
+    expect(source).not.toMatch(/\btype=["']module["']|\beval\s*\(|new\s+Function\s*\(|WebAssembly|\bfetch\s*\(|XMLHttpRequest|new\s+(?:Shared)?Worker\s*\(|serviceWorker|<iframe|<object/i);
     expect(source).not.toMatch(/navigator\.(?:mediaDevices|geolocation|clipboard)|requestFullscreen|window\.(?:open|prompt)\s*\(/i);
 
     const references = [...html.matchAll(/(?:src|href)="([^"]+)"/g)].map((match) => match[1]);

@@ -56,8 +56,8 @@ label { display: block; margin-bottom: .45rem; font-size: .82rem; font-weight: 7
 .diagram-card { overflow: hidden; background: #e8ece5; }
 .diagram-card header { display: flex; justify-content: space-between; align-items: start; gap: 1rem; margin-bottom: .5rem; }
 .diagram-card header p { margin: .25rem 0 0; color: #626960; font-size: .76rem; }
-.diagram-card svg { display: block; width: 100%; height: auto; max-height: 19rem; }
-.diagram-accent { transition: transform .35s ease, y .35s ease; }
+.fixed-scene-stage { position: relative; width: 100%; aspect-ratio: 1.08; overflow: hidden; border-radius: 1rem; background: radial-gradient(circle at 50% 38%, #f8faf6 0 37%, transparent 38%), linear-gradient(#e8ece5, #dce4dd); }
+.fixed-scene-stage canvas, .scene-fallback { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 .diagram-note { margin: .35rem 0 0; color: #5c625b; font-size: .74rem; text-align: center; }
 .calibration-card header p { margin: .3rem 0 1rem; color: #686a62; font-size: .8rem; }
 .calibration-step { padding: 1rem; border-radius: 1rem; background: #efeee8; }

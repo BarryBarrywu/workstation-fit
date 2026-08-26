@@ -30,7 +30,8 @@ test('requires a valid confirmed height before showing personal fit estimates', 
   await expect(page.getByText(/参考范围 \d+–\d+ cm/).first()).toBeVisible();
 });
 
-test('shows condensed evidence status and updates the 2D diagram', async ({ page }) => {
+test('shows condensed evidence status and updates the fixed-camera 3D scene', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(artifactUrl);
   await page.getByLabel('身高（厘米）').fill('205');
   await page.getByRole('button', { name: '查看调节起点' }).click();
@@ -42,21 +43,23 @@ test('shows condensed evidence status and updates the 2D diagram', async ({ page
   await expect(deskEvidence.getByText(/转换：/)).toBeVisible();
   await expect(deskEvidence.getByText(/限制：/)).toBeVisible();
 
-  const diagram = page.getByTestId('fit-diagram');
-  await expect(diagram).toHaveAttribute('data-posture', 'sitting');
-  const tallSeatY = await diagram.getAttribute('data-seat-y');
-  const tallHeadY = await diagram.getAttribute('data-head-y');
+  const scene = page.getByTestId('fit-scene');
+  await expect(scene).toHaveAttribute('data-ready', 'true');
+  await expect(scene).toHaveAttribute('data-camera', 'fixed');
+  await expect(scene).toHaveAttribute('data-posture', 'sitting');
+  await expect(page.locator('.diagram-card svg')).toHaveCount(0);
   await page.getByRole('button').filter({ hasText: '屏幕顶部' }).click();
-  await expect(diagram).toHaveAttribute('data-selected', 'sittingMonitorTop');
+  await expect(scene).toHaveAttribute('data-selected', 'sittingMonitorTop');
+  const sittingFrame = await scene.screenshot();
   await page.getByRole('button', { name: /站姿/ }).click();
-  await expect(diagram).toHaveAttribute('data-posture', 'standing');
+  await expect(scene).toHaveAttribute('data-posture', 'standing');
+  await expect.poll(async () => (await scene.screenshot()).equals(sittingFrame)).toBe(false);
   await expect(page.getByRole('button', { name: /椅面高度/ })).toHaveCount(0);
 
   await page.getByLabel('身高（厘米）').fill('145');
   await page.getByRole('button', { name: '查看调节起点' }).click();
   await page.getByRole('button', { name: /坐姿/ }).click();
-  await expect(diagram).not.toHaveAttribute('data-seat-y', tallSeatY!);
-  await expect(diagram).not.toHaveAttribute('data-head-y', tallHeadY!);
+  await expect(scene).toHaveAttribute('data-height', '145');
 });
 
 test('completes sitting and standing independently, restores them, then requests reconfirmation', async ({ page }) => {
@@ -128,9 +131,26 @@ test('works without HTTP requests or permissions and honors reduced motion', asy
   });
 
   expect(networkRequests).toEqual([]);
-  await expect(page.getByTestId('fit-diagram')).toBeVisible();
-  expect(await page.locator('.diagram-accent').first().evaluate((element) => getComputedStyle(element).transitionDuration)).toBe('0s');
+  await expect(page.getByTestId('fit-scene')).toHaveAttribute('data-motion', 'reduced');
   const shellWidth = await page.locator('.app-shell').evaluate((element) => element.getBoundingClientRect().width);
   expect(shellWidth).toBeLessThanOrEqual(await page.evaluate(() => innerWidth));
   expect(await page.locator('.app-shell').evaluate((element) => Number.parseFloat(getComputedStyle(element).paddingTop))).toBe(36);
+});
+
+test('keeps the fit flow usable with a fixed-angle model fallback when WebGL is unavailable', async ({ page }) => {
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, type, options) {
+      if (String(type).startsWith('webgl')) return null;
+      return original.call(this, type, options as never);
+    } as typeof HTMLCanvasElement.prototype.getContext;
+  });
+  await page.goto(artifactUrl);
+  await page.getByLabel('身高（厘米）').fill('173');
+  await page.getByRole('button', { name: '查看调节起点' }).click();
+
+  await expect(page.getByRole('img', { name: '机器人与工位模型预览' })).toBeVisible();
+  await expect(page.getByText('3D 场景不可用，数值和身体检查不受影响。')).toBeVisible();
+  await page.getByRole('button', { name: '开始坐姿检查' }).click();
+  await expect(page.getByText('1 / 3')).toBeVisible();
 });
