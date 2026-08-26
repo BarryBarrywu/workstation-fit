@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "build:toy": "PUBLIC_SITE_EDITION=toy astro build --outDir dist-toy && node scripts/prepare-toy.mjs",
     "preview": "astro preview",
     "test": "vitest run",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "test:toy:browser": "playwright test --config playwright.toy.config.ts"
   },
   "dependencies": {
     "astro": "7.1.6",
@@ -16,6 +18,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.62.1",
+    "@types/node": "^26.3.0",
     "@types/three": "0.185.3",
     "typescript": "7.0.2",
     "vitest": "3.2.7"

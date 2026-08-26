@@ -4,6 +4,7 @@ const deck = document.querySelector<HTMLElement>('.evidence-deck');
 const progress = document.querySelector<HTMLElement>('#evidence-progress');
 const previous = document.querySelector<HTMLButtonElement>('#previous-evidence');
 const next = document.querySelector<HTMLButtonElement>('#next-evidence');
+const keepsEvidenceHash = import.meta.env.PUBLIC_SITE_EDITION !== 'toy';
 
 let activeIndex = 0;
 let touchStartX = 0;
@@ -31,6 +32,7 @@ function activate(index: number, focusTab = false) {
 }
 
 function activateFromHash(scroll = false) {
+  if (!keepsEvidenceHash) return;
   const index = cards.findIndex((card) => `#${card.id}` === window.location.hash);
   if (index < 0) return;
   activate(index);
@@ -40,7 +42,7 @@ function activateFromHash(scroll = false) {
 tabs.forEach((tab, index) => {
   tab.addEventListener('click', () => {
     activate(index);
-    history.replaceState(null, '', `#${cards[index].id}`);
+    if (keepsEvidenceHash) history.replaceState(null, '', `#${cards[index].id}`);
   });
   tab.addEventListener('keydown', (event) => {
     if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
@@ -59,7 +61,7 @@ document.addEventListener('click', (event) => {
   if (index < 0) return;
   event.preventDefault();
   activate(index);
-  history.replaceState(null, '', `#${cards[index].id}`);
+  if (keepsEvidenceHash) history.replaceState(null, '', `#${cards[index].id}`);
   requestAnimationFrame(() => cards[index].scrollIntoView({ behavior: 'smooth', block: 'center' }));
 });
 
@@ -73,6 +75,6 @@ deck?.addEventListener('touchend', (event) => {
   activate(activeIndex + (distance < 0 ? 1 : -1));
 }, { passive: true });
 
-window.addEventListener('hashchange', () => activateFromHash(true));
+if (keepsEvidenceHash) window.addEventListener('hashchange', () => activateFromHash(true));
 activateFromHash();
 activate(activeIndex);
