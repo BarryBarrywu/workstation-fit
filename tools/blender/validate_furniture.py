@@ -105,7 +105,9 @@ else:
     panel_front = y_bounds("MonitorPanel")[1]
     hardware_front = max(y_bounds("MonitorPivotHead")[1], y_bounds("MonitorVesaMount")[1])
     monitor_front_clearance = panel_front - hardware_front
-    panel_color = objects["MonitorPanel"].active_material.diffuse_color[:3]
+    panel_material = objects["MonitorPanel"].active_material
+    panel_color = panel_material.diffuse_color[:3]
+    panel_texture = next((node.image for node in panel_material.node_tree.nodes if node.type == "TEX_IMAGE"), None)
 
     print(f"desk_width_cm={desk_size.x * 100:.1f}")
     print(f"desk_depth_cm={desk_size.y * 100:.1f}")
@@ -114,6 +116,7 @@ else:
     print(f"screen_height_cm={screen_size.z * 100:.1f}")
     print(f"monitor_front_clearance_mm={monitor_front_clearance * 1000:.1f}")
     print(f"monitor_panel_rgb={','.join(f'{value:.3f}' for value in panel_color)}")
+    print(f"monitor_panel_texture={panel_texture.name if panel_texture else 'none'}")
     print(f"caster_bottom_height_mm={max(caster_bottoms) * 1000:.1f}")
 
     if not 1.18 <= desk_size.x <= 1.22:
@@ -126,8 +129,10 @@ else:
         errors.append("monitor is not approximately 27-inch 16:9")
     if monitor_front_clearance < 0.02:
         errors.append("monitor rear hardware protrudes through the front panel")
-    if max(panel_color) > 0.005:
-        errors.append("monitor panel is not pure black")
+    if panel_material.name != "Furniture_Screen" or panel_texture is None:
+        errors.append("monitor panel wallpaper material is missing")
+    if min(panel_color) < 0.6:
+        errors.append("monitor panel fallback color is too dark")
     if any(abs(height) > 0.005 for height in caster_bottoms):
         errors.append("chair casters are not grounded")
 

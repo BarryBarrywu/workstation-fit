@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 BLEND_PATH = ROOT / "assets/models/workstation-furniture.blend"
 GLB_PATH = ROOT / "public/models/workstation-furniture.glb"
 RENDER_DIR = ROOT / "assets/renders"
+WALLPAPER_PATH = ROOT / "assets/models/textures/monitor-wallpaper.png"
 
 
 def clear_scene():
@@ -33,6 +34,39 @@ def material(name, color, metallic, roughness, alpha=1.0, coat=0.0):
         shader.inputs["Alpha"].default_value = alpha
         mat.surface_render_method = "DITHERED"
     return mat
+
+
+def screen_material():
+    mat = material("Furniture_Screen", (0.839, 0.875, 0.792), 0.0, 0.42, coat=0.04)
+    image = bpy.data.images.load(str(WALLPAPER_PATH), check_existing=True)
+    image.name = "MonitorWallpaper"
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    shader = nodes.get("Principled BSDF")
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.name = "MonitorWallpaperTexture"
+    texture.image = image
+    texture.interpolation = "Linear"
+    links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    emission = shader.inputs.get("Emission Color") or shader.inputs.get("Emission")
+    links.new(texture.outputs["Color"], emission)
+    shader.inputs["Emission Strength"].default_value = 0.18
+    return mat
+
+
+def map_front_uv(obj):
+    uv_layer = obj.data.uv_layers.active or obj.data.uv_layers.new(name="MonitorWallpaperUV")
+    minimum_x = min(vertex.co.x for vertex in obj.data.vertices)
+    maximum_x = max(vertex.co.x for vertex in obj.data.vertices)
+    minimum_z = min(vertex.co.z for vertex in obj.data.vertices)
+    maximum_z = max(vertex.co.z for vertex in obj.data.vertices)
+    for polygon in obj.data.polygons:
+        for loop_index in polygon.loop_indices:
+            vertex = obj.data.vertices[obj.data.loops[loop_index].vertex_index]
+            uv_layer.data[loop_index].uv = (
+                (vertex.co.x - minimum_x) / (maximum_x - minimum_x),
+                (vertex.co.z - minimum_z) / (maximum_z - minimum_z),
+            )
 
 
 def empty(name, parent=None, location=(0, 0, 0), role=None):
@@ -121,7 +155,7 @@ def build_furniture():
     warm_white = material("Furniture_WarmWhite", (0.78, 0.77, 0.72), 0.04, 0.72)
     graphite = material("Furniture_Graphite", (0.12, 0.14, 0.13), 0.58, 0.4, coat=0.08)
     aluminum = material("Furniture_SatinAluminum", (0.62, 0.64, 0.61), 0.72, 0.3, coat=0.12)
-    screen = material("Furniture_Screen", (0.0, 0.0, 0.0), 0.0, 0.22, coat=0.12)
+    screen = screen_material()
     chair_shell = material("Furniture_ChairShell", (0.30, 0.34, 0.31), 0.12, 0.72)
     chair_mesh = material("Furniture_ChairMesh", (0.32, 0.38, 0.34), 0.05, 0.82, alpha=0.18)
     chair_thread = material("Furniture_ChairThread", (0.27, 0.33, 0.29), 0.04, 0.9)
@@ -166,7 +200,8 @@ def build_furniture():
         desk,
         "monitor-screen",
     )
-    rounded_box("MonitorPanel", (0.565, 0.006, 0.315), (0, -0.008, 1.015), screen, 0.012, desk)
+    monitor_panel = rounded_box("MonitorPanel", (0.565, 0.006, 0.315), (0, -0.008, 1.015), screen, 0.012, desk)
+    map_front_uv(monitor_panel)
     rounded_box("MonitorVesaMount", (0.115, 0.04, 0.115), (0, -0.075, 1.015), graphite, 0.025, desk)
 
     chair = empty("ChairRoot", root, (0, 0.288, 0), "ergonomic-chair")

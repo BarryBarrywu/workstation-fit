@@ -105,6 +105,7 @@ export async function createFurnitureRig(loader: GLTFLoader, sceneMeters: number
   function setActiveMetric(metric: MetricKey) {
     const setHighlight = (target: THREE.MeshStandardMaterial[], emphasized: boolean) => {
       target.forEach((material) => {
+        if (material.name === 'Furniture_Screen') return;
         material.emissive.setHex(emphasized ? highlightColor : 0x000000);
         material.emissiveIntensity = emphasized ? 0.16 : 0;
       });
