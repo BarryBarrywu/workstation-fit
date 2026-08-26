@@ -31,6 +31,17 @@ const CHAIR_GAS_MIN_TOP = 0.2175;
 const amber = 0xd5913d;
 const lerp = (from: number, to: number, amount: number) => from + (to - from) * amount;
 
+export function calculateChairAssembly(seatSurface: number) {
+  const chairUpper = seatSurface - 0.0425;
+  const gasTop = Math.max(CHAIR_GAS_MIN_TOP, chairUpper - 0.055);
+  const gasExtension = gasTop - CHAIR_GAS_MIN_TOP;
+  return {
+    chairUpper,
+    gasMiddle: 0.14 + Math.min(gasExtension, 0.13),
+    gasInner: gasTop - 0.07,
+  };
+}
+
 function decodeAccessor(accessor: EncodedAccessor) {
   const binary = atob(accessor.data);
   const bytes = new Uint8Array(binary.length);
@@ -190,11 +201,10 @@ function createFurnitureRig(model: THREE.Object3D) {
       nodes.monitorVesa.position.set(0, screenPoint.y, screenPoint.z + 0.042);
       nodes.chair.position.x = lerp(0, -0.22, postureMix);
       nodes.chair.position.z = lerp(-0.288, -0.58, postureMix);
-      nodes.chairUpper.position.y = seatSurface - 0.438;
-      const gasTop = Math.max(CHAIR_GAS_MIN_TOP, nodes.chairUpper.position.y - 0.055);
-      const gasExtension = gasTop - CHAIR_GAS_MIN_TOP;
-      nodes.chairGasMiddle.position.y = 0.14 + Math.min(gasExtension, 0.13);
-      nodes.chairGasInner.position.y = gasTop - 0.07;
+      const chair = calculateChairAssembly(seatSurface);
+      nodes.chairUpper.position.y = chair.chairUpper;
+      nodes.chairGasMiddle.position.y = chair.gasMiddle;
+      nodes.chairGasInner.position.y = chair.gasInner;
     },
   };
 }
