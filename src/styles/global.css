@@ -41,8 +41,7 @@ a { color: inherit; }
 }
 
 .wordmark { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; font-weight: 650; letter-spacing: -0.03em; }
-.wordmark-mark { width: 24px; height: 24px; border: 1.5px solid currentColor; border-radius: 50%; position: relative; }
-.wordmark-mark::after { content: ""; position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--amber); inset: 6.5px; }
+.wordmark-mark { width: 28px; height: 28px; border-radius: 7px; display: block; object-fit: cover; }
 .header-actions { display: flex; align-items: center; gap: 16px; }
 .header-actions button { padding: 5px 0; border: 0; border-bottom: 1px solid transparent; background: transparent; color: rgba(32, 37, 34, 0.58); font-size: 11px; cursor: pointer; }
 .header-actions button:hover, .header-actions button:focus-visible { color: var(--graphite); border-color: currentColor; }
@@ -315,8 +314,7 @@ h1 { max-width: 420px; margin: 0; font-size: clamp(54px, 5.2vw, 78px); line-heig
 @media (max-width: 560px) {
   .wordmark { font-size: 13px; }
   .onboarding-dialog { inset: auto 16px calc(16px + env(safe-area-inset-bottom)) 16px; width: auto; max-height: calc(100vh - 32px); overflow-y: auto; overscroll-behavior: contain; }
-  .wordmark-mark { width: 20px; height: 20px; }
-  .wordmark-mark::after { width: 7px; height: 7px; inset: 5px; }
+  .wordmark-mark { width: 24px; height: 24px; border-radius: 6px; }
   .header-actions button { font-size: 9px; }
   h1 { font-size: 58px; }
   .calibration-callout { align-items: stretch; flex-direction: column; }
