@@ -4,6 +4,10 @@ Workstation Fit turns a person's measurements into adjustable workstation starti
 
 ## Language
 
+**Chinese product name**:
+`就位` is the shared Chinese name for the website and Bilibili Toy edition. Platform names and implementation variants are not appended to the user-facing brand.
+_Avoid_: 就位 Toy 版, 就位网页版, Toy Lite
+
 **Target population**:
 Chinese adult office users using the tool as a workstation setup starting point. Chinese anthropometric data is preferred; evidence from other populations must name that limitation. Children, wheelchair users, and people requiring clinical or individualized assessment are outside the default model.
 _Avoid_: Universal human model, medical population, silently mixing populations
@@ -41,8 +45,16 @@ The locally saved physical-check progress for one posture. Sitting checks cover 
 _Avoid_: Numeric offset, one shared sitting-and-standing state, mandatory input
 
 **Local fit profile**:
-The height, onboarding state, and posture-check progress saved only in the current browser, with no account or server record. Changing the saved height marks each completed posture check for reconfirmation.
-_Avoid_: Numeric offsets, user account, cloud profile, anonymous tracking
+The height, onboarding state, and posture-check progress saved only in the current platform container, with no account or server record. Website and Bilibili Toy profiles exist independently, are never synchronized or transferred, and may disappear when the platform clears local storage; changing the saved height marks each completed posture check for reconfirmation.
+_Avoid_: Numeric offsets, user account, cloud profile, cross-platform profile, anonymous tracking
+
+**Bilibili Toy edition**:
+A Bilibili-hosted static package of the website's calculator, evidence browser, posture calibration, and 3D scene, with its own build artifact and release lifecycle. It keeps evidence-source links but excludes the website's related-episode and discovery modules; it shares product source and fit rules with the website but has independent local state and is not a redirect, separate product, or reduced mini tool.
+_Avoid_: Website redirect, editorial mirror, separate Toy product, Toy Lite
+
+**Toy preview**:
+An uploaded Bilibili-hosted build used to verify the Toy edition before review submission. It is not an approved or published Toy, and moving from preview to review always requires a separate explicit confirmation.
+_Avoid_: Published Toy, review submission, release
 
 **Related episode entry**:
 One secondary editorial module after the complete evidence chains, containing a shared cover, title, summary, and multiple platform destinations for the related episode. It does not frame the independent calculator as sponsored; a destination without a published URL is visibly pending rather than linked to a placeholder.

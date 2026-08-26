@@ -6,9 +6,12 @@ import { relatedEpisode, relatedLinks } from '../lib/content';
 
 const chains = Object.values(evidenceChains);
 const isChinaDeployment = import.meta.env.SITE_REGION === 'cn';
+const isToyEdition = import.meta.env.PUBLIC_SITE_EDITION === 'toy';
 const icpNumber = import.meta.env.PUBLIC_ICP_NUMBER?.trim();
 const siteOrigin = isChinaDeployment ? 'https://fit.barrybarrywu.cn' : 'https://fit.barrybarrywu.com';
 const shareImageUrl = `${siteOrigin}/brand/jiuwei-character.png`;
+const iconPath = isToyEdition ? './icon.png' : '/icon.png';
+const pageTitle = isToyEdition ? '就位｜桌椅与显示器高度计算器' : '就位｜找到适合你的桌椅与显示器高度';
 const classLabels = {
   'national-standard': '国家标准',
   'occupational-health': '职业健康指南',
@@ -23,19 +26,19 @@ const classLabels = {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content="输入身高，查看有出处的椅面、坐站桌与显示器设置建议。所有个人数据都只保存在浏览器中。" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/icon.png" />
-    <link rel="apple-touch-icon" href="/icon.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href={iconPath} />
+    <link rel="apple-touch-icon" href={iconPath} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="就位｜找到适合你的桌椅与显示器高度" />
     <meta property="og:description" content="输入身高，查看有出处的椅面、坐站桌与显示器设置建议。" />
     <meta property="og:image" content={shareImageUrl} />
     <meta name="twitter:card" content="summary_large_image" />
-    <title>就位｜找到适合你的桌椅与显示器高度</title>
+    <title>{pageTitle}</title>
   </head>
   <body>
     <header class="site-header">
       <a class="wordmark" href="#calculator" aria-label="就位首页">
-        <img class="wordmark-mark" src="/icon.png" alt="" width="28" height="28" />
+        <img class="wordmark-mark" src={iconPath} alt="" width="28" height="28" />
         <span>就位</span>
       </a>
       <nav class="header-actions" aria-label="工具操作">
@@ -184,7 +187,7 @@ const classLabels = {
         </div>
       </section>
 
-      <section id="episode" class="content-section episode-section" aria-labelledby="episode-title">
+      {!isToyEdition && <section id="episode" class="content-section episode-section" aria-labelledby="episode-title">
         <div class="episode-copy">
           <p class="eyebrow">RELATED EPISODE</p>
           <h2 id="episode-title">{relatedEpisode.title}</h2>
@@ -212,9 +215,9 @@ const classLabels = {
             <div class="safe-area"><span>16:9 封面预留</span><small>中央 4:3 安全区域</small></div>
           )}
         </div>
-      </section>
+      </section>}
 
-      <section id="related-links" class="content-section related-links-section" aria-labelledby="related-links-title">
+      {!isToyEdition && <section id="related-links" class="content-section related-links-section" aria-labelledby="related-links-title">
         <div class="section-intro">
           <p class="eyebrow">RELATED LINKS</p>
           <h2 id="related-links-title">发现更多。</h2>
@@ -232,7 +235,7 @@ const classLabels = {
             </a>
           ))}
         </div>
-      </section>
+      </section>}
 
       <section id="independent-footer" class="independent-footer" aria-label="独立工具说明">
         <p>就位由 Barry 独立设计并开源。你的数据只保存在当前浏览器中，不会上传。</p>
