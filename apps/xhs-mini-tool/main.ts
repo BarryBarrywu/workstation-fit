@@ -39,16 +39,12 @@ function saveAndRender() {
   render();
 }
 
-function resultKeys(posture: Posture): ResultKey[] {
-  return POSTURE_RESULTS[posture];
-}
-
 function chainKey(key: ResultKey): EvidenceKey { return key === 'monitorDistance' ? 'distance' : key; }
 
 function render() {
   if (!profile) return;
   const result = calculateWorkstation(profile.confirmedHeight);
-  const keys = resultKeys(profile.posture);
+  const keys = POSTURE_RESULTS[profile.posture];
   if (!keys.includes(profile.selected)) profile.selected = DEFAULT_SELECTION[profile.posture];
   app.innerHTML = `
     <section class="fit-panel" data-testid="fit-results" aria-labelledby="results-title">
