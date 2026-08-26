@@ -9,7 +9,7 @@ const isChinaDeployment = import.meta.env.SITE_REGION === 'cn';
 const isToyEdition = import.meta.env.PUBLIC_SITE_EDITION === 'toy';
 const icpNumber = import.meta.env.PUBLIC_ICP_NUMBER?.trim();
 const siteOrigin = isChinaDeployment ? 'https://fit.barrybarrywu.cn' : 'https://fit.barrybarrywu.com';
-const shareImageUrl = `${siteOrigin}/brand/jiuwei-character.png`;
+const shareImageUrl = isToyEdition ? './brand/jiuwei-character.png' : `${siteOrigin}/brand/jiuwei-character.png`;
 const iconPath = isToyEdition ? './icon.png' : '/icon.png';
 const pageTitle = isToyEdition ? '就位｜桌椅与显示器高度计算器' : '就位｜找到适合你的桌椅与显示器高度';
 const pageDescription = isToyEdition
@@ -47,7 +47,7 @@ const classLabels = {
       </a>
       <nav class="header-actions" aria-label="工具操作">
         <button id="replay-onboarding" type="button">使用说明</button>
-        <span class="header-note">开源 · 数据留在本机</span>
+        {!isToyEdition && <span class="header-note">开源 · 数据留在本机</span>}
       </nav>
     </header>
 
@@ -153,12 +153,21 @@ const classLabels = {
               </dl>
               <div class="source-links" aria-label={`${chain.label}原始资料`}>
                 {chain.sources.map((source) => (
-                  <a href={source.url} target="_blank" rel="noreferrer">
-                    <span>{classLabels[source.evidenceClass]}</span>
-                    <strong>{source.organization}</strong>
-                    <small>{source.title}</small>
-                    <small>{source.versionOrPublished} · 核查于 {source.verifiedAt}</small>
-                  </a>
+                  isToyEdition ? (
+                    <div class="source-citation">
+                      <span>{classLabels[source.evidenceClass]}</span>
+                      <strong>{source.organization}</strong>
+                      <small>{source.title}</small>
+                      <small>{source.versionOrPublished} · 核查于 {source.verifiedAt}</small>
+                    </div>
+                  ) : (
+                    <a href={source.url} target="_blank" rel="noreferrer">
+                      <span>{classLabels[source.evidenceClass]}</span>
+                      <strong>{source.organization}</strong>
+                      <small>{source.title}</small>
+                      <small>{source.versionOrPublished} · 核查于 {source.verifiedAt}</small>
+                    </a>
+                  )
                 ))}
               </div>
               </article>

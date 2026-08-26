@@ -18,6 +18,8 @@ test('presents the independent calculator before evidence and related content', 
   await expect(page.getByRole('link', { name: '就位首页' })).toBeVisible();
   await expect(page.getByRole('heading', { level: 1, name: '按身高，调桌椅。' })).toBeVisible();
   await expect(page.getByText('输入身高，拿到适合你的椅子、桌子和屏幕高度。')).toBeVisible();
+  await expect(page.getByText('开源 · 数据留在本机')).toHaveCount(1);
+  await expect(page.locator('#evidence .source-links a').first()).toHaveAttribute('target', '_blank');
   await expect(page.getByText('实时联动', { exact: false })).toHaveCount(0);
   await expect(page.getByText('滚轮缩放', { exact: false })).toHaveCount(0);
   await expect(page.getByRole('link', { name: /椅面高度来源/ })).toHaveAttribute('href', '#evidence-seat');

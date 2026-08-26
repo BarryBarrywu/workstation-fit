@@ -44,6 +44,13 @@ describe('platform build isolation', () => {
     expect(toyHtml).not.toContain('id="related-links"');
     expect(toyHtml).toContain('href="./icon.png"');
     expect(toyHtml).toContain('src="./_astro/');
+    expect(toyHtml).not.toMatch(/href="(?:https?:)?\/\//);
+    expect(toyHtml).not.toContain('开源 · 数据留在本机');
+    const toyJavaScript = readdirSync(join(projectDirectory, 'dist-toy/_astro'))
+      .filter((file) => file.endsWith('.js'))
+      .map((file) => readFileSync(join(projectDirectory, 'dist-toy/_astro', file), 'utf8'))
+      .join('\n');
+    expect(toyJavaScript).not.toMatch(/openstd\.samr|cnis\.ac\.cn|cornell\.edu|mayoclinic\.org|osha\.gov|ccohs\.ca/);
 
     runBuild('build', {
       ...process.env,

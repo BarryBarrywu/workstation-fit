@@ -8,7 +8,10 @@ test('loads the Toy edition beneath its nested platform path', async ({ page }) 
   await page.goto('./index.html');
   await expect(page).toHaveTitle('就位｜桌椅与显示器高度计算器');
   await expect(page.locator('[data-result="seat"]')).toBeVisible();
-  await expect(page.locator('#evidence .source-links a').first()).toBeVisible();
+  await expect(page.getByText('开源 · 数据留在本机')).toHaveCount(0);
+  await expect(page.locator('#evidence .source-citation').first()).toBeVisible();
+  await expect(page.locator('#evidence .source-links a')).toHaveCount(0);
+  await expect(page.locator('a[href^="http://"], a[href^="https://"], a[href^="//"]')).toHaveCount(0);
   await expect(page.locator('#episode')).toHaveCount(0);
   await expect(page.locator('#related-links')).toHaveCount(0);
 
@@ -71,7 +74,7 @@ test('keeps calculator, scene selection, calibration, evidence, and local profil
 
   await page.getByRole('button', { name: '下一项' }).click();
   await expect(page.locator('#evidence-tab-sittingDesk')).toHaveAttribute('aria-selected', 'true');
-  await expect(page.locator('#evidence-sittingDesk .source-links a').first()).toHaveAttribute('target', '_blank');
+  await expect(page.locator('#evidence-sittingDesk .source-citation').first()).toBeVisible();
   await page.locator('#evidence-tab-sittingDesk').press('ArrowRight');
   await expect(page.locator('#evidence-tab-standingDesk')).toHaveAttribute('aria-selected', 'true');
 

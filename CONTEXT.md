@@ -49,7 +49,7 @@ The height, onboarding state, and posture-check progress saved only in the curre
 _Avoid_: Numeric offsets, user account, cloud profile, cross-platform profile, anonymous tracking
 
 **Bilibili Toy edition**:
-A Bilibili-hosted static package of the website's calculator, evidence browser, posture calibration, and 3D scene, with its own build artifact and release lifecycle. It keeps evidence-source links but excludes the website's related-episode and discovery modules; it shares product source and fit rules with the website but has independent local state and is not a redirect, separate product, or reduced mini tool.
+A Bilibili-hosted static package of the website's calculator, evidence browser, posture calibration, and 3D scene, with its own build artifact and release lifecycle. It keeps evidence-source citations without third-party hyperlinks and excludes the website's related-episode and discovery modules; it shares product source and fit rules with the website but has independent local state and is not a redirect, separate product, or reduced mini tool.
 _Avoid_: Website redirect, editorial mirror, separate Toy product, Toy Lite
 
 **Toy preview**:

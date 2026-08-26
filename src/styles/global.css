@@ -200,7 +200,7 @@ h1 { max-width: 420px; margin: 0; font-size: clamp(54px, 5.2vw, 78px); line-heig
 .evidence-card dt { color: var(--metal); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; }
 .evidence-card dd { margin: 8px 0 0; font-size: 13px; line-height: 1.75; text-wrap: pretty; }
 .source-links { margin: 28px 0 0 66px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.source-links a { min-height: 112px; padding: 15px; border: 1px solid var(--line); border-radius: 14px; text-decoration: none; display: flex; flex-direction: column; align-items: flex-start; }
+.source-links a, .source-citation { min-height: 112px; padding: 15px; border: 1px solid var(--line); border-radius: 14px; text-decoration: none; display: flex; flex-direction: column; align-items: flex-start; }
 .source-links a:hover, .source-links a:focus-visible { border-color: rgba(32, 37, 34, 0.34); background: var(--paper); }
 .source-links span { color: var(--amber); font-size: 10px; letter-spacing: 0.08em; }
 .source-links strong { margin-top: 12px; font-size: 12px; }
