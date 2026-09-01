@@ -20,8 +20,8 @@ export type RelatedLink = {
 export const relatedEpisode = {
   title: '从建议数值，到真实工位。',
   summary: '相关视频会演示怎样把这些建议用到桌子、椅子和显示器上。发布后，可以从下面的平台观看。',
-  cover: null as string | null,
-  coverAlt: '相关视频封面',
+  cover: '/images/episode-0110-cover.png' as string | null,
+  coverAlt: '《工位终于就位》视频封面',
   destinations: [
     { label: 'B站', icon: 'bilibili', url: null },
     { label: 'YouTube', icon: 'youtube', url: null },

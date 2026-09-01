@@ -28,6 +28,11 @@ test('presents the independent calculator before evidence and related content', 
   await expect(page.locator('#episode .platform-links')).toHaveAttribute('aria-label', '视频发布平台与本期商品链接');
   await expect(page.locator('#episode .platform-links > span').filter({ hasText: '小红书' })).toBeVisible();
   await expect(page.locator('#episode .platform-links > span')).toHaveCount(6);
+  const episodeCover = page.locator('#episode .episode-placeholder img');
+  await expect(episodeCover).toBeVisible();
+  await expect(episodeCover).toHaveAttribute('src', '/images/episode-0110-cover.png');
+  await expect(episodeCover).toHaveAttribute('alt', '《工位终于就位》视频封面');
+  await expect(page.locator('#episode .safe-area')).toHaveCount(0);
   const productLinkPlaceholder = page.locator('#episode .platform-links > span').filter({ hasText: '本期商品链接' });
   await expect(productLinkPlaceholder).toBeVisible();
   await expect(productLinkPlaceholder).toContainText('待补充');
