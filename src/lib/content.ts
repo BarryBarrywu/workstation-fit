@@ -23,7 +23,7 @@ export const relatedEpisode = {
   cover: '/images/episode-0110-cover.png' as string | null,
   coverAlt: '《工位终于就位》视频封面',
   destinations: [
-    { label: 'B站', icon: 'bilibili', url: null },
+    { label: 'B站', icon: 'bilibili', url: 'https://www.bilibili.com/video/BV1UftJ6rETW/' },
     { label: 'YouTube', icon: 'youtube', url: null },
     { label: '微信公众号', icon: 'wechat', url: null },
     { label: '抖音', icon: 'douyin', url: null },
@@ -31,7 +31,7 @@ export const relatedEpisode = {
     {
       label: '本期商品链接',
       icon: 'placeholder',
-      url: null,
+      url: 'https://u.jd.com/x1CzbVT',
       pendingLabel: '待补充',
       actionLabel: '查看',
       kind: 'product',
