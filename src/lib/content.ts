@@ -26,8 +26,12 @@ export const relatedEpisode = {
     { label: 'B站', icon: 'bilibili', url: 'https://www.bilibili.com/video/BV1UftJ6rETW/' },
     { label: 'YouTube', icon: 'youtube', url: 'https://youtu.be/N468HWKdEaA' },
     { label: '微信公众号', icon: 'wechat', url: null },
-    { label: '抖音', icon: 'douyin', url: null },
-    { label: '小红书', icon: 'xiaohongshu', url: null },
+    { label: '抖音', icon: 'douyin', url: 'https://www.douyin.com/video/7680856797187411254' },
+    {
+      label: '小红书',
+      icon: 'xiaohongshu',
+      url: 'https://www.xiaohongshu.com/explore/6a97e1a60000000026032ac2?xsec_token=ABL84rHcIHjDgruWeEmvDfnGbgox21Y3JiPyOySgMNJtE=&xsec_source=pc_user',
+    },
     {
       label: '本期商品链接',
       icon: 'placeholder',

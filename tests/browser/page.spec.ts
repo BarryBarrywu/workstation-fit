@@ -23,11 +23,11 @@ test('presents the independent calculator before evidence and related content', 
   await expect(page.getByText('实时联动', { exact: false })).toHaveCount(0);
   await expect(page.getByText('滚轮缩放', { exact: false })).toHaveCount(0);
   await expect(page.getByRole('link', { name: /椅面高度来源/ })).toHaveAttribute('href', '#evidence-seat');
-  await expect(page.locator('#episode').getByText('待发布', { exact: true })).toHaveCount(3);
+  await expect(page.locator('#episode').getByText('待发布', { exact: true })).toHaveCount(1);
   await expect(page.locator('#episode .brand-icon')).toHaveCount(6);
   await expect(page.locator('#episode .platform-links')).toHaveAttribute('aria-label', '视频发布平台与本期商品链接');
-  await expect(page.locator('#episode .platform-links > span').filter({ hasText: '小红书' })).toBeVisible();
-  await expect(page.locator('#episode .platform-links > span')).toHaveCount(3);
+  await expect(page.locator('#episode .platform-links > span').filter({ hasText: '微信公众号' })).toBeVisible();
+  await expect(page.locator('#episode .platform-links > span')).toHaveCount(1);
   const bilibiliLink = page.locator('#episode a[href="https://www.bilibili.com/video/BV1UftJ6rETW/"]');
   await expect(bilibiliLink).toContainText('B站');
   await expect(bilibiliLink).toContainText('观看');
@@ -36,6 +36,14 @@ test('presents the independent calculator before evidence and related content', 
   await expect(youtubeLink).toContainText('YouTube');
   await expect(youtubeLink).toContainText('观看');
   await expect(youtubeLink).toHaveAttribute('target', '_blank');
+  const xiaohongshuLink = page.locator('#episode .platform-links > a').filter({ hasText: '小红书' });
+  await expect(xiaohongshuLink).toHaveAttribute('href', 'https://www.xiaohongshu.com/explore/6a97e1a60000000026032ac2?xsec_token=ABL84rHcIHjDgruWeEmvDfnGbgox21Y3JiPyOySgMNJtE=&xsec_source=pc_user');
+  await expect(xiaohongshuLink).toContainText('观看');
+  await expect(xiaohongshuLink).toHaveAttribute('target', '_blank');
+  const douyinLink = page.locator('#episode a[href="https://www.douyin.com/video/7680856797187411254"]');
+  await expect(douyinLink).toContainText('抖音');
+  await expect(douyinLink).toContainText('观看');
+  await expect(douyinLink).toHaveAttribute('target', '_blank');
   const episodeCover = page.locator('#episode .episode-placeholder img');
   await expect(episodeCover).toBeVisible();
   await expect(episodeCover).toHaveAttribute('src', '/images/episode-0110-cover.png');
@@ -45,7 +53,7 @@ test('presents the independent calculator before evidence and related content', 
   await expect(productLink).toContainText('本期商品链接');
   await expect(productLink).toContainText('查看');
   await expect(productLink).toHaveAttribute('target', '_blank');
-  await expect(page.locator('#episode').getByRole('link')).toHaveCount(3);
+  await expect(page.locator('#episode').getByRole('link')).toHaveCount(5);
   const workstationFitLink = page.locator('#related-links a[href="https://github.com/BarryBarrywu/workstation-fit"]');
   await expect(workstationFitLink).toContainText('项目仓库已公开，可以在这里查看源码、计算方法和后续更新。');
   await expect(workstationFitLink).toContainText('查看 GitHub');
