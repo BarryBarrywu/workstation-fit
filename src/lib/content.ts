@@ -24,7 +24,7 @@ export const relatedEpisode = {
   coverAlt: '《工位终于就位》视频封面',
   destinations: [
     { label: 'B站', icon: 'bilibili', url: 'https://www.bilibili.com/video/BV1UftJ6rETW/' },
-    { label: 'YouTube', icon: 'youtube', url: null },
+    { label: 'YouTube', icon: 'youtube', url: 'https://youtu.be/N468HWKdEaA' },
     { label: '微信公众号', icon: 'wechat', url: null },
     { label: '抖音', icon: 'douyin', url: null },
     { label: '小红书', icon: 'xiaohongshu', url: null },
