@@ -42,10 +42,10 @@ export const relatedEpisode = {
 export const relatedLinks = [
   {
     label: '就位 · GitHub',
-    description: '项目仓库目前仍在整理中。公开后，可以在这里查看源码、计算方法和后续更新。',
+    description: '项目仓库已公开，可以在这里查看源码、计算方法和后续更新。',
     icon: 'github',
     url: 'https://github.com/BarryBarrywu/workstation-fit',
-    meta: '暂未公开',
+    meta: '查看 GitHub',
   },
   {
     label: 'Codex × ZECTRIX Dashboard',

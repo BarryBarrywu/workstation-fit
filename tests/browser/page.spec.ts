@@ -42,7 +42,9 @@ test('presents the independent calculator before evidence and related content', 
   await expect(productLink).toContainText('查看');
   await expect(productLink).toHaveAttribute('target', '_blank');
   await expect(page.locator('#episode').getByRole('link')).toHaveCount(2);
-  await expect(page.locator('#related-links a[href="https://github.com/BarryBarrywu/workstation-fit"]')).toContainText('暂未公开');
+  const workstationFitLink = page.locator('#related-links a[href="https://github.com/BarryBarrywu/workstation-fit"]');
+  await expect(workstationFitLink).toContainText('项目仓库已公开，可以在这里查看源码、计算方法和后续更新。');
+  await expect(workstationFitLink).toContainText('查看 GitHub');
   await expect(page.locator('#related-links a[href="https://github.com/BarryBarrywu/codex-zectrix-dashboard"]')).toContainText('查看 GitHub');
   const tuttiLink = page.locator('#related-links a[href="https://tutti.barrybarrywu.com/zh/"]');
   await expect(tuttiLink).toContainText('了解 Tutti');
