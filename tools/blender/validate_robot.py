@@ -12,6 +12,7 @@ REQUIRED_NODES = {
     "Shoulder_L", "Shoulder_R", "Elbow_L", "Elbow_R",
     "Hip_L", "Hip_R", "Knee_L", "Knee_R", "Ankle_L", "Ankle_R",
     "Hand_L", "Hand_R", "EyeSensor", "ChestLight",
+    "WristSleeve_L", "WristSleeve_R", "HandClampInner_L", "HandClampInner_R",
     "TorsoShell", "PelvisShell", "NeckCore", "HeadShell",
     "ForearmShell_L", "HandClamp_L", "ThighShell_L",
     "FootShell_L", "FootShell_R", "AnkleJoint_L", "AnkleJoint_R",
@@ -96,12 +97,24 @@ if not 1.65 <= height <= 1.80:
     errors.append("reference height is outside the expected range")
 if torso_max < neck_min or neck_max < head_min:
     errors.append("head, neck, and torso shells do not overlap")
-if hand_l_max < forearm_l_min:
-    errors.append("hand and forearm shells do not overlap")
+for suffix in ("L", "R"):
+    wrist_min, wrist_max = z_bounds(f"WristSleeve_{suffix}")
+    forearm_min, _ = z_bounds(f"ForearmShell_{suffix}")
+    _, hand_max = z_bounds(f"HandClamp_{suffix}")
+    if wrist_max < forearm_min or hand_max < wrist_min:
+        errors.append(f"wrist sleeve does not connect forearm and hand on {suffix}")
 if forearm_pelvis_clearance < 0.01:
     errors.append("forearm and pelvis clearance is below 1 cm")
 if hand_thigh_clearance < 0.01:
     errors.append("hand and thigh clearance is below 1 cm")
+
+for obj in meshes:
+    if any(mat and mat.name == "Shell_GreyGreen" for mat in obj.data.materials):
+        colors = obj.data.color_attributes
+        if not colors or not any(
+            abs(item.color[0] - 1) > 0.03 for item in colors[0].data
+        ):
+            errors.append(f"{obj.name} is missing exported paint wear")
 
 if errors:
     print("FAILED: " + "; ".join(errors))

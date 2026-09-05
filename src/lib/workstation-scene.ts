@@ -74,7 +74,7 @@ export async function createWorkstationScene(stage: HTMLElement, canvas: HTMLCan
   const environmentGenerator = new THREE.PMREMGenerator(renderer);
   const environmentMap = environmentGenerator.fromScene(environment).texture;
   scene.environment = environmentMap;
-  scene.environmentIntensity = 0.72;
+  scene.environmentIntensity = 0.48;
   environmentGenerator.dispose();
   environment.dispose();
 
@@ -87,13 +87,16 @@ export async function createWorkstationScene(stage: HTMLElement, canvas: HTMLCan
   controls.maxPolarAngle = 1.48;
   controls.target.set(0, 2.05, 0);
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x89948d, 1.45));
-  const keyLight = new THREE.DirectionalLight(0xfff4df, 2.35);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x89948d, 0.85));
+  const keyLight = new THREE.DirectionalLight(0xfff4df, 2.8);
   keyLight.position.set(-4, 8, 5);
   keyLight.castShadow = true;
-  keyLight.shadow.mapSize.set(1024, 1024);
+  keyLight.shadow.mapSize.set(2048, 2048);
+  keyLight.shadow.radius = 4;
+  keyLight.shadow.normalBias = 0.008;
+  keyLight.shadow.bias = -0.0001;
   scene.add(keyLight);
-  const rimLight = new THREE.DirectionalLight(0xbdd1c5, 0.85);
+  const rimLight = new THREE.DirectionalLight(0xbdd1c5, 0.65);
   rimLight.position.set(5, 5, -5);
   scene.add(rimLight);
 
@@ -126,13 +129,6 @@ export async function createWorkstationScene(stage: HTMLElement, canvas: HTMLCan
     if (!(object instanceof THREE.Mesh)) return;
     object.castShadow = true;
     object.receiveShadow = true;
-    const materials = Array.isArray(object.material) ? object.material : [object.material];
-    materials.forEach((material) => {
-      if (!(material instanceof THREE.MeshStandardMaterial) || material.name !== 'Shell_Accent') return;
-      material.color.setHex(0x657169);
-      material.roughness = 0.58;
-      material.metalness = 0.24;
-    });
   });
   robot.add(robotModel);
 

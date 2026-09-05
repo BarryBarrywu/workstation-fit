@@ -1,5 +1,6 @@
 from pathlib import Path
 import math
+import os
 import random
 
 import bmesh
@@ -10,7 +11,7 @@ from mathutils import Vector
 ROOT = Path(__file__).resolve().parents[2]
 BLEND_PATH = ROOT / "assets/models/workstation-guide.blend"
 GLB_PATH = ROOT / "public/models/workstation-guide.glb"
-RENDER_DIR = ROOT / "assets/renders"
+RENDER_DIR = Path(os.environ.get("ROBOT_RENDER_DIR", ROOT / "assets/renders"))
 TEXTURE_DIR = ROOT / "assets/models/textures"
 TEX_SIZE = 512
 
@@ -59,28 +60,14 @@ def material(
         texture.extension = "REPEAT"
         color_socket = texture.outputs["Color"]
         if use_vertex_wear:
-            # Mesh-edge wear via color attribute (no UV atlas → no limb stripes)
-            attr = nodes.new("ShaderNodeAttribute")
-            attr.attribute_name = "Wear"
-            sep = nodes.new("ShaderNodeSeparateColor")
-            links.new(attr.outputs["Color"], sep.inputs["Color"])
-            # Scale wear down — only subtle edge chalk, do not wash shell white
-            scale = nodes.new("ShaderNodeMath")
-            scale.operation = "MULTIPLY"
-            scale.inputs[1].default_value = 0.28
-            links.new(sep.outputs["Red"], scale.inputs[0])
-            worn = nodes.new("ShaderNodeRGB")
-            worn.outputs[0].default_value = (0.50, 0.53, 0.49, 1)
-            mix = nodes.new("ShaderNodeMix")
-            mix.data_type = "RGBA"
-            mix.clamp_factor = True
-            links.new(scale.outputs[0], mix.inputs["Factor"])
-            a_in = mix.inputs.get("A") or mix.inputs[6]
-            b_in = mix.inputs.get("B") or mix.inputs[7]
-            links.new(color_socket, a_in)
-            links.new(worn.outputs[0], b_in)
-            result = mix.outputs.get("Result") or mix.outputs[2]
-            links.new(result, shader.inputs["Base Color"])
+            attr = nodes.new("ShaderNodeVertexColor")
+            attr.layer_name = "PaintWear"
+            mix = nodes.new("ShaderNodeMixRGB")
+            mix.blend_type = "MULTIPLY"
+            mix.inputs[0].default_value = 1.0
+            links.new(color_socket, mix.inputs[1])
+            links.new(attr.outputs["Color"], mix.inputs[2])
+            links.new(mix.outputs["Color"], shader.inputs["Base Color"])
         else:
             links.new(color_socket, shader.inputs["Base Color"])
 
@@ -91,23 +78,7 @@ def material(
         texture.extension = "REPEAT"
         separate = nodes.new("ShaderNodeSeparateColor")
         links.new(texture.outputs["Color"], separate.inputs["Color"])
-        if use_vertex_wear:
-            attr_r = nodes.new("ShaderNodeAttribute")
-            attr_r.attribute_name = "Wear"
-            sep_r = nodes.new("ShaderNodeSeparateColor")
-            links.new(attr_r.outputs["Color"], sep_r.inputs["Color"])
-            mul = nodes.new("ShaderNodeMath")
-            mul.operation = "MULTIPLY"
-            mul.inputs[1].default_value = 0.06
-            links.new(sep_r.outputs["Red"], mul.inputs[0])
-            add = nodes.new("ShaderNodeMath")
-            add.operation = "ADD"
-            add.use_clamp = True
-            links.new(separate.outputs["Green"], add.inputs[0])
-            links.new(mul.outputs[0], add.inputs[1])
-            links.new(add.outputs[0], shader.inputs["Roughness"])
-        else:
-            links.new(separate.outputs["Green"], shader.inputs["Roughness"])
+        links.new(separate.outputs["Green"], shader.inputs["Roughness"])
     if normal_texture:
         texture = nodes.new("ShaderNodeTexImage")
         texture.image = normal_texture
@@ -139,6 +110,11 @@ def empty(name, parent=None, location=(0, 0, 0), role=None):
 
 
 def finish_mesh(obj, mat, parent, role=None, uv_project=True):
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+    bm.to_mesh(obj.data)
+    bm.free()
     obj.data.materials.clear()
     obj.data.materials.append(mat)
     obj.parent = parent
@@ -148,6 +124,13 @@ def finish_mesh(obj, mat, parent, role=None, uv_project=True):
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.shade_smooth_by_angle()
+    if role == "foot_shell":
+        for face in obj.data.polygons:
+            face.use_smooth = len(face.vertices) == 4
+    elif any(len(face.vertices) > 4 for face in obj.data.polygons):
+        normal = obj.modifiers.new("Face normals", "WEIGHTED_NORMAL")
+        normal.keep_sharp = True
+        bpy.ops.object.modifier_apply(modifier=normal.name)
     if uv_project and mat.name == "Shell_GreyGreen":
         bpy.ops.object.mode_set(mode="EDIT")
         bpy.ops.mesh.select_all(action="SELECT")
@@ -333,9 +316,9 @@ def compose_seamless_shell_textures(color_img, rough_img, normal_img):
     size = color_img.size[0]
     rng = random.Random(17)
     # Restored grey-green satin (not washed white-grey)
-    base = (0.425, 0.478, 0.432)
-    dark = (0.355, 0.405, 0.368)
-    warm = (0.445, 0.485, 0.428)
+    base = (0.390, 0.410, 0.370)
+    dark = (0.350, 0.375, 0.320)
+    warm = (0.400, 0.417, 0.355)
 
     color_px = []
     rough_px = []
@@ -348,10 +331,10 @@ def compose_seamless_shell_textures(color_img, rough_img, normal_img):
             micro = _tileable_fbm(x * 5.5, y * 5.1, size, 33, octaves=2)
             bowl = _tileable_fbm(x * 0.55, y * 0.52, size, 61, octaves=3)
             # Stronger spray mottling + orange-peel grain (previous visual layer)
-            mottling = (spray - 0.5) * 0.038 + (fine - 0.5) * 0.018 + (micro - 0.5) * 0.012
+            mottling = (spray - 0.5) * 0.032 + (fine - 0.5) * 0.012 + (micro - 0.5) * 0.006
             recess = max(0.0, 0.48 - bowl) * 0.10
             warm_mix = max(0.0, spray - 0.55) * 0.35
-            grain = rng.uniform(-1, 1) * 0.0045
+            grain = rng.uniform(-1, 1) * 0.008
             r = base[0] + (warm[0] - base[0]) * warm_mix + mottling + grain
             g = base[1] + (warm[1] - base[1]) * warm_mix + mottling * 0.95 + grain * 0.9
             b = base[2] + (warm[2] - base[2]) * warm_mix + mottling * 0.82 + grain * 0.75
@@ -360,13 +343,13 @@ def compose_seamless_shell_textures(color_img, rough_img, normal_img):
             b += (dark[2] - b) * recess
             color_px.extend((max(0.0, min(1.0, r)), max(0.0, min(1.0, g)), max(0.0, min(1.0, b)), 1.0))
 
-            rough = 0.48 + (spray - 0.5) * 0.06 + (fine - 0.5) * 0.03 - recess * 0.05 + rng.uniform(-1, 1) * 0.014
-            rough = max(0.32, min(0.70, rough))
+            rough = 0.52 + (spray - 0.5) * 0.14 + (fine - 0.5) * 0.03 - recess * 0.05 + rng.uniform(-1, 1) * 0.022
+            rough = max(0.32, min(0.57, rough))
             rough_px.extend((rough, rough, rough, 1.0))
 
             peel = (fine - 0.5) * 0.16 + (micro - 0.5) * 0.10
             broad = (spray - 0.5) * 0.08
-            row.append(broad + peel - recess * 0.05)
+            row.append(broad + peel - recess * 0.05 + rng.uniform(-0.055, 0.055))
         heights.append(row)
 
     normal_px = []
@@ -385,15 +368,29 @@ def compose_seamless_shell_textures(color_img, rough_img, normal_img):
     for img in (color_img, rough_img, normal_img):
         img.update()
         img.save()
+        # Preview the same decoded PNGs that the browser receives in the GLB.
+        img.source = "FILE"
+        img.reload()
         img.pack()
 
 
 def bake_shell_wear(root, color_img, rough_img, normal_img):
-    """Seamless paint textures + per-vertex mesh wear (no UV atlas stripes)."""
-    shells = shell_objects(root)
     compose_seamless_shell_textures(color_img, rough_img, normal_img)
-    for obj in shells:
+    for obj in shell_objects(root):
         paint_mesh_wear_attributes(obj)
+        mesh = obj.data
+        wear = mesh.color_attributes["Wear"]
+        paint = mesh.color_attributes.new(name="PaintWear", type="BYTE_COLOR", domain="CORNER")
+        for loop in mesh.loops:
+            co = obj.matrix_world @ mesh.vertices[loop.vertex_index].co
+            patch = _fbm(co.x * 27 + co.z * 3, co.y * 27 + co.z * 11, 43)
+            edge, cavity = wear.data[loop.index].color[:2]
+            # Kept below one so glTF's vertex-color multiplication matches Blender.
+            tone = min(1.0, max(0.60, 0.84 + edge * (0.12 + patch * 0.10)
+                                - cavity * 0.15 + (patch - 0.45) * 0.07))
+            paint.data[loop.index].color = (tone, tone, tone, 1)
+        mesh.color_attributes.remove(wear)
+        mesh.color_attributes.active_color = paint
 
 
 def rounded_box(name, dimensions, location, radius, mat, parent, role=None):
@@ -404,7 +401,7 @@ def rounded_box(name, dimensions, location, radius, mat, parent, role=None):
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     bevel = obj.modifiers.new("Soft bevel", "BEVEL")
     bevel.width = radius
-    bevel.segments = 4
+    bevel.segments = 8
     bevel.limit_method = "ANGLE"
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.modifier_apply(modifier=bevel.name)
@@ -428,7 +425,7 @@ def tapered_box(name, bottom, top, depth_bottom, depth_top, height, location, ra
     obj.location = location
     bevel = obj.modifiers.new("Soft bevel", "BEVEL")
     bevel.width = radius
-    bevel.segments = 5
+    bevel.segments = 8
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.modifier_apply(modifier=bevel.name)
     return finish_mesh(obj, mat, parent, role)
@@ -443,8 +440,8 @@ def ellipsoid(name, dimensions, location, mat, parent, role=None, segments=24, r
     return finish_mesh(obj, mat, parent, role)
 
 
-def super_shell(name, dimensions, location, mat, parent, role=None, exponent=0.56, bottom_scale=(1, 1), top_scale=(1, 1)):
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=20, location=location)
+def super_shell(name, dimensions, location, mat, parent, role=None, exponent=0.56, bottom_scale=(1, 1), top_scale=(1, 1), cross_exponent=None, rings=20):
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=rings, location=location)
     obj = bpy.context.object
     obj.name = name
     width, depth, height = dimensions
@@ -457,6 +454,11 @@ def super_shell(name, dimensions, location, mat, parent, role=None, exponent=0.5
         x = signed_power(source.x)
         y = signed_power(source.y)
         z = signed_power(source.z)
+        if cross_exponent is not None:
+            theta = math.atan2(source.y, source.x)
+            radius = max(0, 1 - source.z ** 2) ** (exponent / 2)
+            x = radius * math.copysign(abs(math.cos(theta)) ** cross_exponent, math.cos(theta))
+            y = radius * math.copysign(abs(math.sin(theta)) ** cross_exponent, math.sin(theta))
         mix = (z + 1) * 0.5
         scale_x = bottom_scale[0] + (top_scale[0] - bottom_scale[0]) * mix
         scale_y = bottom_scale[1] + (top_scale[1] - bottom_scale[1]) * mix
@@ -470,7 +472,7 @@ def cylinder(name, radius, depth, location, rotation, mat, parent, role=None, ve
     obj.name = name
     bevel = obj.modifiers.new("Edge bevel", "BEVEL")
     bevel.width = min(radius * 0.16, depth * 0.16)
-    bevel.segments = 3
+    bevel.segments = 2
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.modifier_apply(modifier=bevel.name)
     return finish_mesh(obj, mat, parent, role, uv_project=False)
@@ -491,139 +493,208 @@ def groove_ring(name, radius, tube, location, rotation, mat, parent):
     return finish_mesh(obj, mat, parent, uv_project=False)
 
 
-def shoe_shell(name, mat, parent, role=None):
-    """Sharper industrial shoe: pointed toe, defined heel cup, ankle wrap."""
-    # Center so bottom meets sole top (~world z 0.006) and top still wraps ankle
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=20, location=(0, -0.055, -0.072))
-    obj = bpy.context.object
-    obj.name = name
-
-    for vertex in obj.data.vertices:
-        source = vertex.co.normalized()
-        exp = 0.54
-        x = math.copysign(abs(source.x) ** exp, source.x)
-        y = math.copysign(abs(source.y) ** exp, source.y)
-        z = math.copysign(abs(source.z) ** exp, source.z)
-
-        if y < 0:
-            length_scale = 1.28
-            tip = min(1.0, -y)
-            width_scale = 0.96 - tip * 0.28
-            z_mul = 0.96 - tip * 0.14
-        else:
-            length_scale = 0.82
-            width_scale = 0.90
-            z_mul = 1.0
-            z_mul += y * 0.28
-
-        if z < 0:
-            # Stretch bottom down into sole pad
-            z = z * 0.82
-            width_scale *= 1.01
-            length_scale *= 1.005
-        else:
-            z = z * (1.14 * z_mul)
-            if z > 0.42:
-                collar = (z - 0.42) / 0.65
-                width_scale *= 1.0 - collar * 0.16
-                length_scale *= 1.0 - collar * 0.12
-                if y > 0.15:
-                    width_scale *= 1.0 - collar * 0.05
-
-        vertex.co = (
-            x * 0.070 * width_scale,
-            y * 0.148 * length_scale,
-            z * 0.072,
-        )
-
-    return finish_mesh(obj, mat, parent, role)
+def head_parting_line(parent, mat):
+    curve = bpy.data.curves.new("HeadPartingLine", "CURVE")
+    curve.dimensions = "3D"
+    curve.bevel_depth = 0.0007
+    curve.bevel_resolution = 1
+    spline = curve.splines.new("POLY")
+    points = []
+    for center_x, center_z, start in [(0.088, 0.018, 0), (-0.088, 0.018, 90),
+                                       (-0.088, -0.018, 180), (0.088, -0.018, 270)]:
+        for i in range(16):
+            angle = math.radians(start + i * 90 / 15)
+            x = center_x + 0.066 * math.cos(angle)
+            z = center_z + 0.066 * math.sin(angle)
+            dx, dz = max(abs(x) - 0.096, 0), max(abs(z) - 0.0225, 0)
+            y = -0.046 - math.sqrt(max(0, 0.075 ** 2 - dx ** 2 - dz ** 2))
+            points.append((x, y - 0.0003, z + 0.0125, 1))
+    spline.points.add(len(points) - 1)
+    for point, co in zip(spline.points, points):
+        point.co = co
+    spline.use_cyclic_u = True
+    obj = bpy.data.objects.new("HeadPartingLine", curve)
+    bpy.context.collection.objects.link(obj)
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.convert(target="MESH")
+    finish_mesh(bpy.context.object, mat, parent, uv_project=False)
 
 
-def shoe_sole(name, mat, parent, role=None):
-    """Thin continuous sole following shoe plan, ~4mm edge reveal under shell."""
-    half = 0.0045
-    # Shoe shell plan is ~0.070 half-width × elongated Y; expand ~4mm for visible rim
-    expand = 0.004
-    ring = []
-    for i in range(24):
-        t = (i / 24) * math.pi * 2
-        c = math.cos(t)
-        s = math.sin(t)
-        if s < 0:
-            rx = 0.070 * (1.0 - 0.24 * abs(s)) + expand
-            ry = 0.138 + expand
-        else:
-            rx = 0.070 + expand * 0.85
-            ry = 0.082 + expand
-        ring.append((rx * c, -0.042 + ry * s))
-    # Top face slightly smaller so side wall reads as thin sole thickness
-    top_scale = 0.96
-    vertices = [(x, y, -half) for x, y in ring] + [(x * top_scale, y * top_scale, half) for x, y in ring]
-    n = len(ring)
-    faces = [tuple(range(n)), tuple(range(2 * n - 1, n - 1, -1))]
-    for i in range(n):
-        j = (i + 1) % n
-        faces.append((i, j, n + j, n + i))
+def foot_outline(theta, width, length):
+    c, sn = math.cos(theta), math.sin(theta)
+    return (math.copysign(abs(c) ** 0.70, c) * width / 2 * (1 - max(0, -sn) * 0.08),
+            math.copysign(abs(sn) ** 0.70, sn) * length / 2)
+
+
+def foot_mesh(name, rings, mat, parent, role):
+    segments = 32
+    vertices = []
+    for z, width, length, center_y in rings:
+        for i in range(segments):
+            x, y = foot_outline(i * math.tau / segments, width, length)
+            vertices.append((x, y + center_y, z))
+    faces = [tuple(reversed(range(segments)))]
+    for j in range(len(rings) - 1):
+        for i in range(segments):
+            a = j * segments + i
+            b = j * segments + (i + 1) % segments
+            faces.append((a, b, b + segments, a + segments))
+    faces.append(tuple((len(rings) - 1) * segments + i for i in range(segments)))
     mesh = bpy.data.meshes.new(f"{name}Mesh")
     mesh.from_pydata(vertices, [], faces)
     mesh.update()
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
-    # Flush under shell, bottom on ground
-    obj.location = (0, -0.055, -0.1295)
-    bpy.context.view_layer.objects.active = obj
-    obj.select_set(True)
-    bevel = obj.modifiers.new("Sole bevel", "BEVEL")
-    bevel.width = 0.0032
-    bevel.segments = 3
-    bpy.ops.object.modifier_apply(modifier=bevel.name)
-    return finish_mesh(obj, mat, parent, role, uv_project=False)
+    return finish_mesh(obj, mat, parent, role)
+
+
+def shoe_shell(name, mat, parent, role=None):
+    return foot_mesh(name, [
+        (-0.123, 0.129, 0.267, -0.061),
+        (-0.118, 0.137, 0.274, -0.061),
+        (-0.105, 0.139, 0.273, -0.060),
+        (-0.083, 0.135, 0.265, -0.058),
+        (-0.064, 0.128, 0.237, -0.047),
+        (-0.042, 0.116, 0.184, -0.025),
+        (-0.018, 0.095, 0.123, -0.002),
+        (0.005, 0.078, 0.087, 0.008),
+        (0.011, 0.065, 0.071, 0.008),
+    ], mat, parent, role)
+
+
+def shoe_sole(name, mat, parent, role=None):
+    return foot_mesh(name, [
+        (-0.134, 0.134, 0.272, -0.061),
+        (-0.132, 0.144, 0.282, -0.061),
+        (-0.124, 0.144, 0.282, -0.061),
+        (-0.122, 0.135, 0.274, -0.061),
+    ], mat, parent, role)
+
+
+def profile_shell(name, dimensions, location, mat, parent, role=None,
+                  bottom_scale=0.82, top_scale=1.0, exponent=0.88):
+    # Broaden the end transitions while retaining the long, gently crowned walls.
+    width, depth, height = dimensions
+    profile = [(0.0, 0.70), (0.012, 0.82), (0.035, 0.92), (0.065, 0.97),
+               (0.10, 0.99), (0.16, 1.0), (0.28, 1.012), (0.5, 1.02),
+               (0.72, 1.012), (0.84, 1.0), (0.90, 0.99), (0.935, 0.97),
+               (0.965, 0.92), (0.988, 0.82), (1.0, 0.70)]
+    segments = 32
+    vertices = []
+    for t, roll in profile:
+        taper = bottom_scale + (top_scale - bottom_scale) * t
+        for i in range(segments):
+            theta = i * math.tau / segments
+            c, sn = math.cos(theta), math.sin(theta)
+            vertices.append((math.copysign(abs(c) ** exponent, c) * width / 2 * taper * roll,
+                             math.copysign(abs(sn) ** exponent, sn) * depth / 2 * taper * roll,
+                             (t - 0.5) * height))
+    faces = [tuple(reversed(range(segments)))]
+    for j in range(len(profile) - 1):
+        for i in range(segments):
+            a = j * segments + i
+            b = j * segments + (i + 1) % segments
+            faces.append((a, b, b + segments, a + segments))
+    faces.append(tuple((len(profile) - 1) * segments + i for i in range(segments)))
+    mesh = bpy.data.meshes.new(f"{name}Mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    obj.location = location
+    return finish_mesh(obj, mat, parent, role)
+
+
+def pivot(name, radius, width, parent, joint, accent):
+    half = width / 2
+    left = [(-half - 0.001, 0.63, 0), (-half - 0.005, 0.68, 1),
+            (-half - 0.006, 0.86, 1), (-half - 0.003, 0.97, 1),
+            (-half + 0.002, 1.0, 0), (-half + 0.009, 0.97, 0),
+            (-half + 0.012, 0.77, 0), (-0.010, 0.77, 0),
+            (-0.007, 0.86, 1)]
+    profile = left + [(-x, r, m) for x, r, m in reversed(left)]
+    segments = 32
+    vertices = [(x, radius * r * math.cos(i * math.tau / segments),
+                 radius * r * math.sin(i * math.tau / segments))
+                for x, r, _ in profile for i in range(segments)]
+    faces = [tuple(reversed(range(segments)))]
+    materials = [0]
+    for j in range(len(profile) - 1):
+        for i in range(segments):
+            a = j * segments + i
+            b = j * segments + (i + 1) % segments
+            faces.append((a, b, b + segments, a + segments))
+            materials.append(profile[j][2])
+    faces.append(tuple((len(profile) - 1) * segments + i for i in range(segments)))
+    materials.append(0)
+    mesh = bpy.data.meshes.new(f"{name}Mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    finish_mesh(obj, joint, parent, uv_project=False)
+    mesh.materials.append(accent)
+    for face, index in zip(mesh.polygons, materials):
+        face.material_index = index
 
 
 def make_arm(side, root, shell, joint, joint_accent, seam):
     suffix = "L" if side > 0 else "R"
     shoulder = empty(f"Shoulder_{suffix}", root, (0.238 * side, 0, 1.43), "shoulder")
-    ellipsoid(f"ShoulderShell_{suffix}", (0.13, 0.16, 0.16), (-0.012 * side, 0, -0.02), shell, shoulder, "shoulder_shell")
-    super_shell(f"UpperArmShell_{suffix}", (0.105, 0.125, 0.275), (0, 0, -0.165), shell, shoulder, "upper_arm_shell", exponent=0.68, bottom_scale=(0.80, 0.84))
-    # Mid upper-arm seam — very thin, embedded feel
-    groove_ring(f"UpperArmSeam_{suffix}", 0.045, 0.0013, (0, 0, -0.165), (0, 0, 0), seam, shoulder)
-
+    super_shell(f"ShoulderShell_{suffix}", (0.123, 0.154, 0.15),
+                (-0.014 * side, 0, -0.018), shell, shoulder, "shoulder_shell",
+                exponent=0.68, cross_exponent=0.82, rings=28)
+    profile_shell(f"UpperArmShell_{suffix}", (0.106, 0.125, 0.224),
+                  (0, 0, -0.174), shell, shoulder, "upper_arm_shell", bottom_scale=0.81)
     elbow = empty(f"Elbow_{suffix}", shoulder, (0, 0, -0.305), "elbow")
-    cylinder(f"ElbowJoint_{suffix}", 0.038, 0.070, (0, 0, 0), (0, math.pi / 2, 0), joint, elbow)
-    cylinder(f"ElbowCap_{suffix}", 0.030, 0.009, (0.039 * side, 0, 0), (0, math.pi / 2, 0), joint_accent, elbow)
-    super_shell(f"ForearmShell_{suffix}", (0.118, 0.135, 0.285), (0, 0, -0.148), shell, elbow, "forearm_shell", exponent=0.68, bottom_scale=(0.70, 0.76))
-    groove_ring(f"ForearmSeam_{suffix}", 0.047, 0.0013, (0, 0, -0.148), (0, 0, 0), seam, elbow)
-
+    pivot(f"ElbowJoint_{suffix}", 0.037, 0.076, elbow, joint, joint_accent)
+    profile_shell(f"ForearmShell_{suffix}", (0.102, 0.118, 0.260),
+                  (0, 0, -0.157), shell, elbow, "forearm_shell", bottom_scale=0.78)
+    cylinder(f"WristSleeve_{suffix}", 0.033, 0.038, (0, 0, -0.296), (0, 0, 0), joint, elbow)
     hand = empty(f"Hand_{suffix}", elbow, (0, 0, -0.305), "hand")
-    super_shell(f"HandClamp_{suffix}", (0.10, 0.105, 0.16), (0, 0, -0.06), shell, hand, "hand_clamp", exponent=0.78, bottom_scale=(0.92, 0.92), top_scale=(0.72, 0.74))
+    clamp = super_shell(f"HandClamp_{suffix}", (0.083, 0.085, 0.153),
+                        (0, 0, -0.063), shell, hand, "hand_clamp", exponent=0.82,
+                        bottom_scale=(0.81, 0.81), top_scale=(0.90, 0.90))
+    # Separate the closed clamp into two rigid jaws with a narrow physical seam.
+    for jaw_side in (-1, 1):
+        jaw = clamp if jaw_side == -1 else clamp.copy()
+        if jaw_side == 1:
+            jaw.data = clamp.data.copy()
+            bpy.context.collection.objects.link(jaw)
+            jaw.name = f"HandClampInner_{suffix}"
+        bm = bmesh.new()
+        bm.from_mesh(jaw.data)
+        if jaw_side == 1:
+            # Mirror the first jaw so both halves retain the same capsule profile.
+            for v in bm.verts:
+                v.co.x = -v.co.x
+        else:
+            bmesh.ops.bisect_plane(bm, geom=list(bm.verts) + list(bm.edges) + list(bm.faces),
+                                  dist=0.00001, plane_co=(0, 0, 0), plane_no=(1, 0, 0), clear_outer=True)
+            boundary = [e for e in bm.edges if e.is_boundary]
+            bmesh.ops.holes_fill(bm, edges=boundary)
+        for v in bm.verts:
+            v.co.x += jaw_side * 0.0007
+        bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+        bm.to_mesh(jaw.data)
+        bm.free()
 
 
 def make_leg(side, root, shell, joint, joint_accent, sole, seam):
     suffix = "L" if side > 0 else "R"
     hip = empty(f"Hip_{suffix}", root, (0.11 * side, 0, 0.965), "hip")
-    # Slightly fuller top of thigh to blend into pelvis silhouette
-    super_shell(
-        f"ThighShell_{suffix}",
-        (0.162, 0.178, 0.365),
-        (0, 0.008, -0.205),
-        shell,
-        hip,
-        "thigh_shell",
-        exponent=0.66,
-        bottom_scale=(0.70, 0.74),
-        top_scale=(1.04, 1.06),
-    )
-    groove_ring(f"ThighSeam_{suffix}", 0.064, 0.0014, (0, 0.008, -0.205), (0, 0, 0), seam, hip)
-
+    cylinder(f"HipBearing_{suffix}", 0.057, 0.110, (0, 0, 0), (0, math.pi / 2, 0), joint, hip)
+    cylinder(f"HipCover_{suffix}", 0.063, 0.012, (0.061 * side, 0, 0), (0, math.pi / 2, 0), shell, hip)
+    profile_shell(f"ThighShell_{suffix}", (0.155, 0.175, 0.391),
+                  (0, 0.008, -0.200), shell, hip, "thigh_shell", bottom_scale=0.76, exponent=0.86)
     knee = empty(f"Knee_{suffix}", hip, (0, 0, -0.425), "knee")
-    cylinder(f"KneeJoint_{suffix}", 0.041, 0.072, (0, 0, 0), (0, math.pi / 2, 0), joint, knee)
-    cylinder(f"KneeCap_{suffix}", 0.031, 0.009, (0.041 * side, 0, 0), (0, math.pi / 2, 0), joint_accent, knee)
-    super_shell(f"CalfShell_{suffix}", (0.135, 0.15, 0.40), (0, 0, -0.210), shell, knee, "calf_shell", exponent=0.70, bottom_scale=(0.68, 0.72), top_scale=(0.94, 0.96))
-    groove_ring(f"CalfSeam_{suffix}", 0.054, 0.0013, (0, 0, -0.210), (0, 0, 0), seam, knee)
-
+    pivot(f"KneeJoint_{suffix}", 0.043, 0.098, knee, joint, joint_accent)
+    profile_shell(f"CalfShell_{suffix}", (0.130, 0.148, 0.373),
+                  (0, 0, -0.217), shell, knee, "calf_shell", bottom_scale=0.76, exponent=0.86)
     ankle = empty(f"Ankle_{suffix}", knee, (0, 0, -0.415), "ankle")
-    cylinder(f"AnkleJoint_{suffix}", 0.030, 0.060, (0, 0, 0), (0, math.pi / 2, 0), joint, ankle)
-    cylinder(f"AnkleCap_{suffix}", 0.023, 0.008, (0.034 * side, 0, 0), (0, math.pi / 2, 0), joint_accent, ankle)
+    pivot(f"AnkleJoint_{suffix}", 0.030, 0.072, ankle, joint, joint_accent)
     shoe_shell(f"FootShell_{suffix}", shell, ankle, "foot_shell")
     shoe_sole(f"FootSole_{suffix}", sole, ankle, "foot_sole")
 
@@ -636,31 +707,33 @@ def build_robot():
     shell = material(
         "Shell_GreyGreen",
         (0.425, 0.478, 0.432),
-        0.32,
-        0.48,
+        0.22,
+        0.52,
         color_texture=color_img,
         roughness_texture=rough_img,
         normal_texture=normal_img,
-        normal_strength=0.34,
-        coat_weight=0.15,
+        normal_strength=0.42,
+        coat_weight=0.04,
         coat_roughness=0.42,
         specular_ior=1.48,
         use_vertex_wear=True,
     )
-    joint = material("Joint_Graphite", (0.035, 0.04, 0.037), 0.72, 0.30, coat_weight=0.14, coat_roughness=0.24)
-    joint_accent = material("Joint_Accent", (0.09, 0.105, 0.095), 0.58, 0.28, coat_weight=0.12, coat_roughness=0.26)
+    joint = material("Joint_Graphite", (0.018, 0.022, 0.019), 0.48, 0.48, coat_weight=0.0, coat_roughness=0.4)
+    joint_accent = material("Joint_Accent", (0.09, 0.105, 0.095), 0.45, 0.43, coat_weight=0.0, coat_roughness=0.4)
     sole = material("Sole_Graphite", (0.042, 0.048, 0.045), 0.28, 0.70)
-    shell_accent = material("Shell_Accent", (0.42, 0.455, 0.425), 0.22, 0.55)
-    seam = material("Shell_Seam", (0.26, 0.28, 0.265), 0.48, 0.50, coat_weight=0.06, coat_roughness=0.38)
-    amber = material("Sensor_Amber", (0.88, 0.46, 0.08), 0.1, 0.3, (0.9, 0.30, 0.03))
+    shell_accent = material("Shell_Accent", (0.122, 0.137, 0.112), 0.22, 0.52, coat_weight=0.04, coat_roughness=0.42)
+    seam = material("Shell_Seam", (0.13, 0.15, 0.12), 0.12, 0.65, coat_weight=0.06, coat_roughness=0.38)
+    amber = material("Sensor_Amber", (0.62, 0.255, 0.025), 0.25, 0.30, (0.40, 0.115, 0.008))
+    sensor_rim = material("Sensor_Brass", (0.32, 0.205, 0.070), 0.65, 0.38)
+    sensor_core = material("Sensor_Core", (0.90, 0.48, 0.085), 0.05, 0.26, (0.65, 0.25, 0.02))
 
     root = empty("RobotRoot", location=(0, 0, 0.009), role="robot_root")
     root["design_language"] = "functional_minimalism"
     root["reference_height_m"] = 1.73
 
     body = empty("Body", root, role="body")
-    tapered_box("TorsoShell", 0.30, 0.365, 0.195, 0.220, 0.37, (0, 0, 1.29), 0.048, shell, body, "torso_shell")
-    groove_ring("TorsoSeam", 0.136, 0.0024, (0, -0.02, 1.348), (math.pi / 2, 0, 0), seam, body)
+    super_shell("TorsoShell", (0.365, 0.220, 0.37), (0, 0, 1.29), shell, body, "torso_shell",
+                exponent=0.25, cross_exponent=0.55, bottom_scale=(0.822, 0.886), rings=28)
     # Pelvis: slightly longer vertical blend toward thighs, softer bottom taper
     super_shell(
         "PelvisShell",
@@ -669,24 +742,30 @@ def build_robot():
         shell,
         body,
         "pelvis_shell",
-        exponent=0.62,
+        exponent=0.74,
         bottom_scale=(0.78, 0.86),
         top_scale=(1.0, 1.0),
     )
-    cylinder("WaistSleeve", 0.118, 0.048, (0, 0, 1.105), (0, 0, 0), joint, body, "waist")
+    waist = cylinder("WaistSleeve", 0.118, 0.048, (0, 0, 1.087), (0, 0, 0), joint, body, "waist")
+    waist.scale.y = 0.74
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
 
-    cylinder("ChestSocket", 0.030, 0.016, (-0.072, -0.116, 1.33), (math.pi / 2, 0, 0), joint, body)
-    cylinder("ChestLight", 0.019, 0.021, (-0.072, -0.125, 1.33), (math.pi / 2, 0, 0), amber, body, "chest_light")
+    cylinder("ChestSocket", 0.025, 0.010, (-0.072, -0.110, 1.33), (math.pi / 2, 0, 0), joint, body)
+    cylinder("ChestRim", 0.021, 0.006, (-0.072, -0.117, 1.33), (math.pi / 2, 0, 0), sensor_rim, body)
+    cylinder("ChestLight", 0.015, 0.004, (-0.072, -0.121, 1.33), (math.pi / 2, 0, 0), amber, body, "chest_light")
+    cylinder("ChestCore", 0.008, 0.002, (-0.072, -0.124, 1.33), (math.pi / 2, 0, 0), sensor_core, body)
 
     head = empty("Head", root, (0, 0, 1.635), "head")
     cylinder("NeckCore", 0.048, 0.085, (0, 0, -0.118), (0, 0, 0), joint, head, "neck")
-    for z in (-0.140, -0.125, -0.110):
-        cylinder(f"NeckRing_{abs(int(z * 1000))}", 0.062, 0.022, (0, 0, z), (0, 0, 0), joint, head, "neck")
-    # Head stays clean — ring seams on face read as a smile; side panel carries the only head detail
-    super_shell("HeadShell", (0.40, 0.250, 0.220), (0, 0, 0), shell, head, "head_shell", exponent=0.50)
-    ellipsoid("HeadSidePanel_R", (0.012, 0.145, 0.120), (-0.198, 0.012, 0), shell_accent, head, "head_panel")
-    cylinder("EyeSocket", 0.038, 0.020, (0.085, -0.125, 0.005), (math.pi / 2, 0, 0), joint, head)
-    cylinder("EyeSensor", 0.022, 0.025, (0.085, -0.139, 0.005), (math.pi / 2, 0, 0), amber, head, "eye_sensor")
+    for z in (-0.145, -0.127, -0.109):
+        cylinder(f"NeckRing_{abs(int(z * 1000))}", 0.062, 0.010, (0, 0, z), (0, 0, 0), joint, head, "neck")
+    rounded_box("HeadShell", (0.342, 0.242, 0.195), (0, 0, 0.0125), 0.075, shell, head, "head_shell")
+    head_parting_line(head, seam)
+    super_shell("HeadSidePanel_R", (0.006, 0.145, 0.110), (-0.169, 0.010, 0), shell_accent, head, "head_panel", exponent=0.55)
+    cylinder("EyeSocket", 0.034, 0.010, (0.073, -0.120, 0.005), (math.pi / 2, 0, 0), joint, head)
+    cylinder("EyeRim", 0.028, 0.006, (0.073, -0.125, 0.005), (math.pi / 2, 0, 0), sensor_rim, head)
+    cylinder("EyeSensor", 0.021, 0.004, (0.073, -0.129, 0.005), (math.pi / 2, 0, 0), amber, head, "eye_sensor")
+    cylinder("EyeCore", 0.011, 0.002, (0.073, -0.132, 0.005), (math.pi / 2, 0, 0), sensor_core, head)
 
     make_arm(1, root, shell, joint, joint_accent, seam)
     make_arm(-1, root, shell, joint, joint_accent, seam)
@@ -699,7 +778,7 @@ def build_robot():
 
 def add_preview_scene():
     ground_mat = material("PreviewGround", (0.88, 0.865, 0.83), 0.0, 0.92)
-    bpy.ops.mesh.primitive_plane_add(size=8, location=(0, 0, 0))
+    bpy.ops.mesh.primitive_plane_add(size=200, location=(0, 0, 0))
     ground = bpy.context.object
     ground.name = "PreviewGround"
     ground.data.materials.append(ground_mat)
@@ -708,7 +787,7 @@ def add_preview_scene():
     bpy.context.scene.world = world
     world.use_nodes = True
     world.node_tree.nodes["Background"].inputs["Color"].default_value = (1.0, 0.96, 0.90, 1)
-    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.55
+    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.28
 
     def area(name, energy, size, location):
         data = bpy.data.lights.new(name, "AREA")
@@ -720,18 +799,22 @@ def add_preview_scene():
         obj.location = location
         look_at(obj, (0, 0, 0.9))
 
-    area("KeyLight", 680, 4.5, (-3.5, -4.0, 5.2))
-    area("FillLight", 310, 3.5, (3.2, -1.8, 3.5))
+    area("KeyLight", 780, 3.0, (-3.5, -4.0, 5.2))
+    area("FillLight", 160, 3.5, (3.2, -1.8, 3.5))
     area("RimLight", 460, 3.0, (0.8, 3.2, 4.0))
 
     camera_data = bpy.data.cameras.new("PreviewCamera")
     camera = bpy.data.objects.new("PreviewCamera", camera_data)
     bpy.context.collection.objects.link(camera)
     camera_data.lens = 68
+    camera_data.type = "ORTHO"
+    camera_data.ortho_scale = 2.05
     bpy.context.scene.camera = camera
 
     scene = bpy.context.scene
-    scene.render.engine = "BLENDER_EEVEE"
+    scene.render.engine = "CYCLES"
+    scene.cycles.samples = 48
+    scene.cycles.use_denoising = True
     scene.render.resolution_x = 720
     scene.render.resolution_y = 900
     scene.render.resolution_percentage = 100
@@ -739,6 +822,7 @@ def add_preview_scene():
     scene.render.film_transparent = False
     scene.render.image_settings.color_mode = "RGBA"
     scene.view_settings.look = "AgX - Medium High Contrast"
+    scene.view_settings.exposure = 0.0
     return camera
 
 
@@ -752,6 +836,10 @@ def export_robot(root):
     GLB_PATH.parent.mkdir(parents=True, exist_ok=True)
     RENDER_DIR.mkdir(parents=True, exist_ok=True)
 
+    camera = bpy.context.scene.camera
+    camera.location = (2.8, -3.4, 1.55)
+    look_at(camera, (0, 0, 0.88))
+    bpy.context.preferences.filepaths.save_version = 0
     bpy.ops.wm.save_as_mainfile(filepath=str(BLEND_PATH))
     bpy.ops.object.select_all(action="DESELECT")
     robot_objects = [root, *list(root.children_recursive)]
@@ -768,23 +856,32 @@ def export_robot(root):
         export_cameras=False,
         export_lights=False,
         export_extras=True,
+        export_vertex_color="NAME",
+        export_vertex_color_name="PaintWear",
     )
 
 
 def render_views(camera, root):
     views = {
-        "front": ((0, -4.1, 1.08), (0, 0, 0.85)),
-        "side": ((4.1, 0, 1.08), (0, 0, 0.85)),
-        "rear": ((0, 4.1, 1.08), (0, 0, 0.85)),
+        "front": ((0, -4.1, 0.88), (0, 0, 0.88)),
+        "side": ((4.1, 0, 0.88), (0, 0, 0.88)),
+        "rear": ((0, 4.1, 0.88), (0, 0, 0.88)),
         "three-quarter": ((2.8, -3.4, 1.55), (0, 0, 0.88)),
         "material-detail": ((1.15, -2.25, 1.58), (0, 0, 1.38)),
         "feet-detail": ((0.90, -1.80, 0.38), (0, -0.03, 0.24)),
     }
+    requested = os.environ.get("ROBOT_RENDER_VIEWS", "").split(",")
     for name, (position, target) in views.items():
+        if requested != [""] and name not in requested:
+            continue
+        camera.data.ortho_scale = 0.75 if "detail" in name else 2.05
         camera.location = position
         look_at(camera, target)
         bpy.context.scene.render.filepath = str(RENDER_DIR / f"robot-preview-{name}.png")
         bpy.ops.render.render(write_still=True)
+
+    if requested != [""] and "seated" not in requested:
+        return
 
     root.location.z = -0.43
     for suffix in ("L", "R"):
@@ -795,6 +892,7 @@ def render_views(camera, root):
 
     stool_mat = material("PreviewStool", (0.72, 0.69, 0.63), 0.0, 0.9)
     rounded_box("PreviewStool", (0.58, 0.48, 0.52), (0, 0.25, 0.26), 0.025, stool_mat, None)
+    camera.data.ortho_scale = 1.75
     camera.location = (4.1, -0.15, 1.0)
     look_at(camera, (0, -0.10, 0.72))
     bpy.context.scene.render.filepath = str(RENDER_DIR / "robot-preview-seated.png")
